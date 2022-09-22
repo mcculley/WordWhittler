@@ -6,6 +6,8 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.Utilities;
 import java.util.StringTokenizer;
 
 public class App {
@@ -22,7 +24,7 @@ public class App {
 
     private static boolean isURL(final String s) {
         return s.startsWith("http://") ||
-                s.startsWith("https://"); // FIXME: detect domain in accordance with Twitter rules.
+                s.startsWith("https://"); // FIXME: Detect domain in accordance with Twitter rules.
     }
 
     private static int getTwitterCharacters(final String s) {
@@ -42,10 +44,26 @@ public class App {
         return total;
     }
 
+    private static String getWordAtCaret(JTextComponent tc) {
+        try {
+            int caretPosition = tc.getCaretPosition();
+            int start = Utilities.getWordStart(tc, caretPosition);
+            int end = Utilities.getWordEnd(tc, caretPosition);
+            return tc.getText(start, end - start);
+        } catch (final BadLocationException e) {
+            throw new AssertionError(e);
+        }
+    }
+
     private void start() {
         final JTextPane contentArea = new JTextPane();
+        final JLabel wordLabel = new JLabel();
+
+        contentArea.addCaretListener(e -> wordLabel.setText(getWordAtCaret(contentArea)));
 
         final JFrame mainFrame = new JFrame("Parsimonious Publisher");
+
+        final JComponent metaContainer = new Box(BoxLayout.Y_AXIS);
 
         final JTable infoTable = new JTable();
 
@@ -102,8 +120,17 @@ public class App {
             }
 
         });
+
+        metaContainer.add(infoTable);
+
+        final JPanel caretWord = new JPanel();
+        caretWord.add(new JLabel("Word at caret:"));
+        caretWord.add(wordLabel);
+
+        metaContainer.add(caretWord);
+
         final JSplitPane mainSplitPane =
-                new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, infoTable, new JScrollPane(contentArea));
+                new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, metaContainer, new JScrollPane(contentArea));
 
         mainFrame.add(mainSplitPane);
 
