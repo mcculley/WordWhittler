@@ -59,9 +59,8 @@ public class App {
         return total;
     }
 
-    private static String getWordAtCaret(final JTextComponent tc) {
+    private static String getWordAtCaret(final JTextComponent tc, final int caretPosition) {
         try {
-            final int caretPosition = tc.getCaretPosition();
             final int start = Utilities.getWordStart(tc, caretPosition);
             final int end = Utilities.getWordEnd(tc, caretPosition);
             return tc.getText(start, end - start);
@@ -87,7 +86,8 @@ public class App {
                 }));
 
         contentArea.addCaretListener(e -> {
-            final String wordAtCaret = getWordAtCaret(contentArea);
+            final int caretPosition = e.getDot();
+            final String wordAtCaret = getWordAtCaret(contentArea, caretPosition);
             wordLabel.setText(wordAtCaret);
 
             try {
@@ -131,7 +131,6 @@ public class App {
                         throw new AssertionError(ex);
                     }
 
-                    final int caretPosition = e.getDot();
                     if (caretPosition >= m.getFromPos() && caretPosition <= m.getToPos()) {
                         errorList.setSelectedIndex(ruleRow);
                     }
