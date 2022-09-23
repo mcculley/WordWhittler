@@ -119,7 +119,7 @@ public class App {
             final StringBuilder b = new StringBuilder();
             for (final POS p : m.keySet()) {
                 b.append(p.getLabel());
-                b.append("\n");
+                b.append('\n');
                 final List<Synset> senses = m.get(p).getSenses();
                 final int numSenses = senses.size();
                 for (int i = 0; i < numSenses; i++) {
@@ -129,6 +129,8 @@ public class App {
                     b.append(synSet.getGloss());
                     b.append('\n');
                 }
+
+                b.append('\n');
             }
 
             return b.toString().trim();
