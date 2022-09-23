@@ -94,21 +94,6 @@ public class App {
                 final Highlighter h = contentArea.getHighlighter();
                 h.removeAllHighlights();
                 final List<RuleMatch> r = languageTool.check(getText(contentArea));
-                for (final RuleMatch m : r) {
-                    final RuleMatch.Type type = m.getType();
-                    final Highlighter.HighlightPainter painter = switch (type) {
-                        case Hint -> new DefaultHighlighter.DefaultHighlightPainter(Color.LIGHT_GRAY);
-                        case UnknownWord -> new DefaultHighlighter.DefaultHighlightPainter(Color.RED);
-                        case Other -> new DefaultHighlighter.DefaultHighlightPainter(Color.YELLOW);
-                    };
-
-                    try {
-                        h.addHighlight(m.getFromPos(), m.getToPos(), painter);
-                    } catch (final BadLocationException ex) {
-                        throw new AssertionError(ex);
-                    }
-                }
-
                 errorList.setModel(new ListModel<>() {
 
                     @Override
@@ -130,6 +115,29 @@ public class App {
                     }
 
                 });
+
+                int ruleRow = 0;
+                for (final RuleMatch m : r) {
+                    final RuleMatch.Type type = m.getType();
+                    final Highlighter.HighlightPainter painter = switch (type) {
+                        case Hint -> new DefaultHighlighter.DefaultHighlightPainter(Color.LIGHT_GRAY);
+                        case UnknownWord -> new DefaultHighlighter.DefaultHighlightPainter(Color.RED);
+                        case Other -> new DefaultHighlighter.DefaultHighlightPainter(Color.YELLOW);
+                    };
+
+                    try {
+                        h.addHighlight(m.getFromPos(), m.getToPos(), painter);
+                    } catch (final BadLocationException ex) {
+                        throw new AssertionError(ex);
+                    }
+
+                    final int caretPosition = e.getDot();
+                    if (caretPosition >= m.getFromPos() && caretPosition <= m.getToPos()) {
+                        errorList.setSelectedIndex(ruleRow);
+                    }
+
+                    ruleRow++;
+                }
             } catch (final IOException ex) {
                 throw new UncheckedIOException(ex);
             }
