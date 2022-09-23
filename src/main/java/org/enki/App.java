@@ -230,7 +230,6 @@ public class App {
         metaContainer.add(infoTable);
 
         final JPanel caretWord = new JPanel();
-        caretWord.add(new JLabel("Word at caret:"));
         caretWord.add(wordLabel);
 
         metaContainer.add(caretWord);
