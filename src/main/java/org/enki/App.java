@@ -1,16 +1,27 @@
 package org.enki;
 
+import org.languagetool.JLanguageTool;
+import org.languagetool.language.AmericanEnglish;
+import org.languagetool.rules.RuleMatch;
+
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Document;
+import javax.swing.text.Highlighter;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Utilities;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.util.List;
 import java.util.StringTokenizer;
 
 public class App {
+
+    private final JLanguageTool languageTool = new JLanguageTool(new AmericanEnglish());
 
     private static String getText(final JTextPane t) {
         final Document doc = t.getDocument();
@@ -59,7 +70,26 @@ public class App {
         final JTextPane contentArea = new JTextPane();
         final JLabel wordLabel = new JLabel();
 
-        contentArea.addCaretListener(e -> wordLabel.setText(getWordAtCaret(contentArea)));
+        contentArea.addCaretListener(e -> {
+            final String wordAtCaret = getWordAtCaret(contentArea);
+            wordLabel.setText(wordAtCaret);
+
+            try {
+                final Highlighter h = contentArea.getHighlighter();
+                h.removeAllHighlights();
+                final List<RuleMatch> r = languageTool.check(getText(contentArea));
+                for (final RuleMatch m : r) {
+                    System.err.printf("m = '%s'\n", m);
+                    try {
+                        h.addHighlight(m.getFromPos(), m.getToPos(), DefaultHighlighter.DefaultPainter);
+                    } catch (final BadLocationException ex) {
+                        throw new AssertionError(ex);
+                    }
+                }
+            } catch (final IOException ex) {
+                throw new UncheckedIOException(ex);
+            }
+        });
 
         final JFrame mainFrame = new JFrame("Parsimonious Publisher");
 
