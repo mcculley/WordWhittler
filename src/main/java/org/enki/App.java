@@ -8,6 +8,8 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
@@ -78,12 +80,20 @@ public class App {
         final JLabel wordLabel = new JLabel();
         final JList<RuleMatch> errorList = new JList<>();
 
+        final ListSelectionListener errorListListener = e -> {
+            if (!e.getValueIsAdjusting() && errorList.getSelectedIndex() == e.getFirstIndex()) {
+                System.err.println(e);
+            }
+        };
+
         errorList.setCellRenderer(new TransformingListCellRenderer<>(
                 (Function<RuleMatch, String>) ruleMatch -> {
                     final String region = getRegion(contentArea, ruleMatch);
                     return region + ": " +
                             ruleMatch.getMessage().replace("<suggestion>", "'").replaceAll("</suggestion>", "'");
                 }));
+
+        errorList.addListSelectionListener(errorListListener);
 
         contentArea.addCaretListener(e -> {
             final int caretPosition = e.getDot();
@@ -132,7 +142,9 @@ public class App {
                     }
 
                     if (caretPosition >= m.getFromPos() && caretPosition <= m.getToPos()) {
+                        errorList.removeListSelectionListener(errorListListener);
                         errorList.setSelectedIndex(ruleRow);
+                        errorList.addListSelectionListener(errorListListener);
                     }
 
                     ruleRow++;
