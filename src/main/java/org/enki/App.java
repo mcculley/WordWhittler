@@ -8,7 +8,6 @@ import javax.swing.*;
 import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
@@ -125,27 +124,7 @@ public class App {
                     final Highlighter h = contentArea.getHighlighter();
                     h.removeAllHighlights();
                     final List<RuleMatch> r = languageTool.check(getText(contentArea));
-                    errorList.setModel(new ListModel<>() {
-
-                        @Override
-                        public int getSize() {
-                            return r.size();
-                        }
-
-                        @Override
-                        public RuleMatch getElementAt(final int index) {
-                            return r.get(index);
-                        }
-
-                        @Override
-                        public void addListDataListener(ListDataListener l) {
-                        }
-
-                        @Override
-                        public void removeListDataListener(ListDataListener l) {
-                        }
-
-                    });
+                    errorList.setModel(new ListListModel<>(r));
 
                     int ruleRow = 0;
                     for (final RuleMatch m : r) {
@@ -317,6 +296,26 @@ public class App {
                                                       final boolean isSelected, final boolean cellHasFocus) {
             return super.getListCellRendererComponent(list, transformer.apply((T) value), index, isSelected,
                     cellHasFocus);
+        }
+
+    }
+
+    private static class ListListModel<T> extends AbstractListModel<T> {
+
+        private final List<T> list;
+
+        public ListListModel(final List<T> list) {
+            this.list = list;
+        }
+
+        @Override
+        public int getSize() {
+            return list.size();
+        }
+
+        @Override
+        public T getElementAt(int i) {
+            return list.get(i);
         }
 
     }
