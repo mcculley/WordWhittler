@@ -5,6 +5,7 @@ import org.languagetool.language.AmericanEnglish;
 import org.languagetool.rules.RuleMatch;
 
 import javax.swing.*;
+import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataListener;
@@ -22,6 +23,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 public class App {
@@ -80,9 +82,16 @@ public class App {
         final JLabel wordLabel = new JLabel();
         final JList<RuleMatch> errorList = new JList<>();
 
+        final AtomicReference<CaretListener> contentCaretListener = new AtomicReference<>();
+
         final ListSelectionListener errorListListener = e -> {
-            if (!e.getValueIsAdjusting() && errorList.getSelectedIndex() == e.getFirstIndex()) {
-                System.err.println(e);
+            final List<RuleMatch> selectedMatches = errorList.getSelectedValuesList();
+            if (!e.getValueIsAdjusting() && selectedMatches.size() == 1) {
+                final RuleMatch m = selectedMatches.get(0);
+                contentArea.removeCaretListener(contentCaretListener.get());
+                contentArea.setCaretPosition(m.getToPos());
+                contentArea.addCaretListener(contentCaretListener.get());
+                contentArea.requestFocus();
             }
         };
 
@@ -95,7 +104,7 @@ public class App {
 
         errorList.addListSelectionListener(errorListListener);
 
-        contentArea.addCaretListener(e -> {
+        contentCaretListener.set(e -> {
             final int caretPosition = e.getDot();
             final String wordAtCaret = getWordAtCaret(contentArea, caretPosition);
             wordLabel.setText(wordAtCaret);
@@ -153,6 +162,8 @@ public class App {
                 throw new UncheckedIOException(ex);
             }
         });
+
+        contentArea.addCaretListener(contentCaretListener.get());
 
         final JFrame mainFrame = new JFrame("Parsimonious Publisher");
 
