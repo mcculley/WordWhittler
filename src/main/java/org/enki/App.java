@@ -61,9 +61,9 @@ public class App {
 
     private static String getWordAtCaret(final JTextComponent tc) {
         try {
-            int caretPosition = tc.getCaretPosition();
-            int start = Utilities.getWordStart(tc, caretPosition);
-            int end = Utilities.getWordEnd(tc, caretPosition);
+            final int caretPosition = tc.getCaretPosition();
+            final int start = Utilities.getWordStart(tc, caretPosition);
+            final int end = Utilities.getWordEnd(tc, caretPosition);
             return tc.getText(start, end - start);
         } catch (final BadLocationException e) {
             throw new AssertionError(e);
