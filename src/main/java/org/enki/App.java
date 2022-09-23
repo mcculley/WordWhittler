@@ -1,6 +1,13 @@
 package org.enki;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Range;
+import net.sf.extjwnl.JWNLException;
+import net.sf.extjwnl.data.IndexWord;
+import net.sf.extjwnl.data.POS;
+import net.sf.extjwnl.data.Synset;
+import net.sf.extjwnl.data.Word;
+import net.sf.extjwnl.dictionary.Dictionary;
 import org.languagetool.JLanguageTool;
 import org.languagetool.language.AmericanEnglish;
 import org.languagetool.rules.RuleMatch;
@@ -22,6 +29,7 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -29,6 +37,15 @@ import java.util.function.Function;
 public class App {
 
     private final JLanguageTool languageTool = new JLanguageTool(new AmericanEnglish());
+    private final Dictionary dictionary;
+
+    public App() {
+        try {
+            dictionary = Dictionary.getDefaultResourceInstance();
+        } catch (final JWNLException e) {
+            throw new AssertionError(e);
+        }
+    }
 
     private static String getText(final JTextComponent t) {
         final Document doc = t.getDocument();
@@ -52,6 +69,8 @@ public class App {
     private class DocumentFrame extends JFrame {
 
         private final JList<RuleMatch> errorList = new JList<>();
+        private final JLabel wordLabel = new JLabel();
+        private final JTextArea definitionArea = new JTextArea();
 
         private class ContentPane extends JTextPane {
 
@@ -80,11 +99,67 @@ public class App {
 
         }
 
+        private Map<POS, IndexWord> lookup(final String s) {
+            final ImmutableMap.Builder<POS, IndexWord> m = new ImmutableMap.Builder<>();
+            POS.getAllPOS().forEach(p -> {
+                try {
+                    final IndexWord i = dictionary.lookupIndexWord(p, s);
+                    if (i != null) {
+                        m.put(p, i);
+                    }
+                } catch (final JWNLException e) {
+                    throw new AssertionError(e);
+                }
+            });
+
+            return m.build();
+        }
+
+        private final String fullDefinition(final Map<POS, IndexWord> m) {
+            final StringBuilder b = new StringBuilder();
+            for (final POS p : m.keySet()) {
+                b.append(p.getLabel());
+                b.append("\n");
+                final List<Synset> senses = m.get(p).getSenses();
+                final int numSenses = senses.size();
+                for (int i = 0; i < numSenses; i++) {
+                    b.append(i + 1);
+                    b.append(' ');
+                    final Synset synSet = senses.get(i);
+                    b.append(synSet.getGloss());
+                    b.append('\n');
+                }
+            }
+
+            return b.toString().trim();
+        }
+
+        private void setWordOfInterest(final String s) {
+            wordLabel.setText(s);
+            final Map<POS, IndexWord> indexWords = lookup(s);
+            System.out.println(indexWords);
+            indexWords.values().forEach(w -> {
+                final List<Synset> senses = w.getSenses();
+                for (final Synset synSet : senses) {
+                    System.out.printf("synSet='%s'\n", synSet);
+                    final List<Word> words = synSet.getWords();
+                    for (final Word word : words) {
+                        System.out.printf("word='%s'\n", word);
+                    }
+                }
+            });
+
+            final String fullDefinition = fullDefinition(indexWords);
+            System.out.println(fullDefinition);
+            definitionArea.setText(fullDefinition);
+        }
+
         public DocumentFrame() throws HeadlessException {
             super("Parsimonious Publisher");
 
+            definitionArea.setEditable(false);
+
             final JTextPane contentArea = new ContentPane();
-            final JLabel wordLabel = new JLabel();
 
             final AtomicReference<CaretListener> contentCaretListener = new AtomicReference<>();
 
@@ -115,9 +190,9 @@ public class App {
 
                 if (mark == dot) {
                     final String wordAtCaret = getWordAtCaret(contentArea, dot);
-                    wordLabel.setText(wordAtCaret);
+                    setWordOfInterest(wordAtCaret);
                 } else {
-                    wordLabel.setText(contentArea.getText()
+                    setWordOfInterest(contentArea.getText()
                             .substring(contentArea.getSelectionStart(), contentArea.getSelectionEnd()));
                 }
 
@@ -215,6 +290,8 @@ public class App {
             caretWord.add(wordLabel);
 
             metaContainer.add(caretWord);
+
+            metaContainer.add(new JScrollPane(definitionArea));
 
             metaContainer.add(new JScrollPane(errorList));
 
