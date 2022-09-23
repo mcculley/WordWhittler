@@ -160,37 +160,24 @@ public class App {
 
             @Override
             public Object getValueAt(final int rowIndex, final int columnIndex) {
-                switch (rowIndex) {
-                    case 0:
-                        switch (columnIndex) {
-                            case 0:
-                                return "Characters";
-                            case 1:
-                                return Integer.toString(getText(contentArea).length());
-                            default:
-                                throw new AssertionError();
-                        }
-                    case 1:
-                        switch (columnIndex) {
-                            case 0:
-                                return "Twitter Characters";
-                            case 1:
-                                return Integer.toString(getTwitterCharacters(getText(contentArea)));
-                            default:
-                                throw new AssertionError();
-                        }
-                    case 2:
-                        switch (columnIndex) {
-                            case 0:
-                                return "Twitter Characters Remaining";
-                            case 1:
-                                return Integer.toString(280 - getTwitterCharacters(getText(contentArea)));
-                            default:
-                                throw new AssertionError();
-                        }
-                    default:
-                        throw new AssertionError();
-                }
+                return switch (rowIndex) {
+                    case 0 -> switch (columnIndex) {
+                        case 0 -> "Characters";
+                        case 1 -> Integer.toString(getText(contentArea).length());
+                        default -> throw new AssertionError();
+                    };
+                    case 1 -> switch (columnIndex) {
+                        case 0 -> "Twitter Characters";
+                        case 1 -> Integer.toString(getTwitterCharacters(getText(contentArea)));
+                        default -> throw new AssertionError();
+                    };
+                    case 2 -> switch (columnIndex) {
+                        case 0 -> "Twitter Characters Remaining";
+                        case 1 -> Integer.toString(280 - getTwitterCharacters(getText(contentArea)));
+                        default -> throw new AssertionError();
+                    };
+                    default -> throw new AssertionError();
+                };
             }
 
         });
