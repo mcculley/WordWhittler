@@ -40,6 +40,7 @@ public class App {
 
     private static int getTwitterCharacters(final String s) {
         // See https://developer.twitter.com/en/docs/counting-characters
+        // FIXME: Need to handle counts for Unicode characters correctly?
 
         final StringTokenizer tokenizer = new StringTokenizer(s, " ", true);
         int total = 0;
