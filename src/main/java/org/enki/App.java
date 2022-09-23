@@ -41,8 +41,8 @@ public class App {
     }
 
     private static boolean isURL(final String s) {
-        return s.startsWith("http://") ||
-                s.startsWith("https://"); // FIXME: Detect domain in accordance with Twitter rules.
+        // FIXME: Detect domain in accordance with Twitter rules.
+        return s.startsWith("http://") || s.startsWith("https://");
     }
 
     private static String message(final RuleMatch match) {
