@@ -45,7 +45,13 @@ public class App {
                 s.startsWith("https://"); // FIXME: Detect domain in accordance with Twitter rules.
     }
 
+    private static String message(final RuleMatch match) {
+        return match.getMessage().replace("<suggestion>", "'").replaceAll("</suggestion>", "'");
+    }
+
     private class DocumentFrame extends JFrame {
+
+        private final JList<RuleMatch> errorList = new JList<>();
 
         private class ContentPane extends JTextPane {
 
@@ -53,10 +59,23 @@ public class App {
                 setToolTipText("");
             }
 
+            private RuleMatch findError(final int position) {
+                final int numErrors = errorList.getModel().getSize();
+                for (int i = 0; i < numErrors; i++) {
+                    final RuleMatch m = errorList.getModel().getElementAt(i);
+                    if (position >= m.getFromPos() && position <= m.getToPos()) {
+                        return m;
+                    }
+                }
+
+                return null;
+            }
+
             @Override
             public String getToolTipText(final MouseEvent event) {
                 final int position = viewToModel2D(event.getPoint());
-                return Integer.toString(position);
+                final RuleMatch m = findError(position);
+                return m == null ? null : message(m);
             }
 
         }
@@ -66,7 +85,6 @@ public class App {
 
             final JTextPane contentArea = new ContentPane();
             final JLabel wordLabel = new JLabel();
-            final JList<RuleMatch> errorList = new JList<>();
 
             final AtomicReference<CaretListener> contentCaretListener = new AtomicReference<>();
 
@@ -84,8 +102,7 @@ public class App {
             errorList.setCellRenderer(new TransformingListCellRenderer<>(
                     (Function<RuleMatch, String>) ruleMatch -> {
                         final String region = getRegion(contentArea, ruleMatch);
-                        return region + ": " +
-                                ruleMatch.getMessage().replace("<suggestion>", "'").replaceAll("</suggestion>", "'");
+                        return region + ": " + message(ruleMatch);
                     }));
 
             errorList.addListSelectionListener(errorListListener);
