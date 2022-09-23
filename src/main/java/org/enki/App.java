@@ -137,20 +137,7 @@ public class App {
         private void setWordOfInterest(final String s) {
             wordLabel.setText(s);
             final Map<POS, IndexWord> indexWords = lookup(s);
-            System.out.println(indexWords);
-            indexWords.values().forEach(w -> {
-                final List<Synset> senses = w.getSenses();
-                for (final Synset synSet : senses) {
-                    System.out.printf("synSet='%s'\n", synSet);
-                    final List<Word> words = synSet.getWords();
-                    for (final Word word : words) {
-                        System.out.printf("word='%s'\n", word);
-                    }
-                }
-            });
-
             final String fullDefinition = fullDefinition(indexWords);
-            System.out.println(fullDefinition);
             definitionArea.setText(fullDefinition);
         }
 
