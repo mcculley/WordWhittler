@@ -82,7 +82,8 @@ public class App {
         errorList.setCellRenderer(new TransformingListCellRenderer<>(
                 (Function<RuleMatch, String>) ruleMatch -> {
                     final String region = getRegion(contentArea, ruleMatch);
-                    return region + ": " + ruleMatch.getMessage();
+                    return region + ": " +
+                            ruleMatch.getMessage().replace("<suggestion>", "'").replaceAll("</suggestion>", "'");
                 }));
 
         contentArea.addCaretListener(e -> {
