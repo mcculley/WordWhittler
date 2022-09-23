@@ -104,9 +104,18 @@ public class App {
         errorList.addListSelectionListener(errorListListener);
 
         contentCaretListener.set(e -> {
-            final int caretPosition = e.getDot();
-            final String wordAtCaret = getWordAtCaret(contentArea, caretPosition);
-            wordLabel.setText(wordAtCaret);
+            final int selectionStart = contentArea.getSelectionStart();
+            final int selectionEnd = contentArea.getSelectionEnd();
+            final int dot = e.getDot();
+            final int mark = e.getMark();
+
+            if (mark == dot) {
+                final String wordAtCaret = getWordAtCaret(contentArea, dot);
+                wordLabel.setText(wordAtCaret);
+            } else {
+                wordLabel.setText(contentArea.getText()
+                        .substring(contentArea.getSelectionStart(), contentArea.getSelectionEnd()));
+            }
 
             try {
                 final Highlighter h = contentArea.getHighlighter();
@@ -149,7 +158,7 @@ public class App {
                         throw new AssertionError(ex);
                     }
 
-                    if (caretPosition >= m.getFromPos() && caretPosition <= m.getToPos()) {
+                    if (dot >= m.getFromPos() && dot <= m.getToPos()) {
                         errorList.removeListSelectionListener(errorListListener);
                         errorList.setSelectedIndex(ruleRow);
                         errorList.addListSelectionListener(errorListListener);
@@ -159,6 +168,13 @@ public class App {
                 }
             } catch (final IOException ex) {
                 throw new UncheckedIOException(ex);
+            }
+
+            if (dot != mark) {
+                contentArea.removeCaretListener(contentCaretListener.get());
+                contentArea.setSelectionStart(selectionStart);
+                contentArea.setSelectionEnd(selectionEnd);
+                contentArea.addCaretListener(contentCaretListener.get());
             }
         });
 
