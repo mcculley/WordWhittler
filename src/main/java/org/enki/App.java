@@ -1,5 +1,6 @@
 package org.enki;
 
+import com.google.common.collect.Range;
 import org.languagetool.JLanguageTool;
 import org.languagetool.language.AmericanEnglish;
 import org.languagetool.rules.RuleMatch;
@@ -107,8 +108,8 @@ public class App {
             errorList.addListSelectionListener(errorListListener);
 
             contentCaretListener.set(e -> {
-                final int selectionStart = contentArea.getSelectionStart();
-                final int selectionEnd = contentArea.getSelectionEnd();
+                final Range<Integer> selection =
+                        Range.closed(contentArea.getSelectionStart(), contentArea.getSelectionEnd());
                 final int dot = e.getDot();
                 final int mark = e.getMark();
 
@@ -155,8 +156,8 @@ public class App {
 
                 if (dot != mark) {
                     contentArea.removeCaretListener(contentCaretListener.get());
-                    contentArea.setSelectionStart(selectionStart);
-                    contentArea.setSelectionEnd(selectionEnd);
+                    contentArea.setSelectionStart(selection.lowerEndpoint());
+                    contentArea.setSelectionEnd(selection.upperEndpoint());
                     contentArea.addCaretListener(contentCaretListener.get());
                 }
             });
