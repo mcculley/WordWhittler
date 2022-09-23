@@ -7,6 +7,7 @@ import org.languagetool.rules.RuleMatch;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListDataListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
@@ -14,16 +15,18 @@ import javax.swing.text.Document;
 import javax.swing.text.Highlighter;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Utilities;
+import java.awt.*;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.function.Function;
 
 public class App {
 
     private final JLanguageTool languageTool = new JLanguageTool(new AmericanEnglish());
 
-    private static String getText(final JTextPane t) {
+    private static String getText(final JTextComponent t) {
         final Document doc = t.getDocument();
         final int length = doc.getLength();
         try {
@@ -56,7 +59,7 @@ public class App {
         return total;
     }
 
-    private static String getWordAtCaret(JTextComponent tc) {
+    private static String getWordAtCaret(final JTextComponent tc) {
         try {
             int caretPosition = tc.getCaretPosition();
             int start = Utilities.getWordStart(tc, caretPosition);
@@ -67,9 +70,20 @@ public class App {
         }
     }
 
+    private static String getRegion(final JTextComponent tc, final RuleMatch m) {
+        return getText(tc).substring(m.getFromPos(), m.getToPos());
+    }
+
     private void start() {
         final JTextPane contentArea = new JTextPane();
         final JLabel wordLabel = new JLabel();
+        final JList<RuleMatch> errorList = new JList<>();
+
+        errorList.setCellRenderer(new TransformingListCellRenderer<>(
+                (Function<RuleMatch, String>) ruleMatch -> {
+                    final String region = getRegion(contentArea, ruleMatch);
+                    return region + ": " + ruleMatch.getMessage();
+                }));
 
         contentArea.addCaretListener(e -> {
             final String wordAtCaret = getWordAtCaret(contentArea);
@@ -80,13 +94,41 @@ public class App {
                 h.removeAllHighlights();
                 final List<RuleMatch> r = languageTool.check(getText(contentArea));
                 for (final RuleMatch m : r) {
-                    System.err.printf("m = '%s'\n", m);
+                    final RuleMatch.Type type = m.getType();
+                    final Highlighter.HighlightPainter painter = switch (type) {
+                        case Hint -> new DefaultHighlighter.DefaultHighlightPainter(Color.LIGHT_GRAY);
+                        case UnknownWord -> new DefaultHighlighter.DefaultHighlightPainter(Color.RED);
+                        case Other -> new DefaultHighlighter.DefaultHighlightPainter(Color.YELLOW);
+                    };
+
                     try {
-                        h.addHighlight(m.getFromPos(), m.getToPos(), DefaultHighlighter.DefaultPainter);
+                        h.addHighlight(m.getFromPos(), m.getToPos(), painter);
                     } catch (final BadLocationException ex) {
                         throw new AssertionError(ex);
                     }
                 }
+
+                errorList.setModel(new ListModel<>() {
+
+                    @Override
+                    public int getSize() {
+                        return r.size();
+                    }
+
+                    @Override
+                    public RuleMatch getElementAt(final int index) {
+                        return r.get(index);
+                    }
+
+                    @Override
+                    public void addListDataListener(ListDataListener l) {
+                    }
+
+                    @Override
+                    public void removeListDataListener(ListDataListener l) {
+                    }
+
+                });
             } catch (final IOException ex) {
                 throw new UncheckedIOException(ex);
             }
@@ -160,6 +202,8 @@ public class App {
 
         metaContainer.add(caretWord);
 
+        metaContainer.add(new JScrollPane(errorList));
+
         final JSplitPane mainSplitPane =
                 new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, metaContainer, new JScrollPane(contentArea));
 
@@ -186,6 +230,23 @@ public class App {
 
         mainFrame.setSize(800, 600);
         mainFrame.setVisible(true);
+    }
+
+    private static class TransformingListCellRenderer<T> extends DefaultListCellRenderer {
+
+        private final Function<T, String> transformer;
+
+        public TransformingListCellRenderer(final Function<T, String> transformer) {
+            this.transformer = transformer;
+        }
+
+        @Override
+        public Component getListCellRendererComponent(final JList<?> list, final Object value, final int index,
+                                                      final boolean isSelected, final boolean cellHasFocus) {
+            return super.getListCellRendererComponent(list, transformer.apply((T) value), index, isSelected,
+                    cellHasFocus);
+        }
+
     }
 
     public static void main(final String[] args) {
