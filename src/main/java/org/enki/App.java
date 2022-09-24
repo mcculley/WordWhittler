@@ -16,8 +16,8 @@ import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Document;
@@ -43,6 +43,41 @@ public class App {
     private final Dictionary dictionary;
 
     private record TableRow(String name, Supplier<String> valueSupplier) {
+    }
+
+    private static class TableRowModel extends AbstractTableModel {
+
+        private final TableRow[] rows;
+
+        public TableRowModel(final TableRow[] rows) {
+            this.rows = rows;
+        }
+
+        @Override
+        public int getRowCount() {
+            return rows.length;
+        }
+
+        @Override
+        public int getColumnCount() {
+            return 2;
+        }
+
+        @Override
+        public boolean isCellEditable(final int rowIndex, final int columnIndex) {
+            return false;
+        }
+
+        @Override
+        public Object getValueAt(final int rowIndex, final int columnIndex) {
+            final TableRow infoRow = rows[rowIndex];
+            return switch (columnIndex) {
+                case 0 -> infoRow.name;
+                case 1 -> infoRow.valueSupplier.get();
+                default -> throw new AssertionError();
+            };
+        }
+
     }
 
     public App() {
@@ -270,34 +305,7 @@ public class App {
                             () -> Integer.toString(280 - getTwitterCharacters(getText(contentArea))))
             };
 
-            infoTable.setModel(new DefaultTableModel() {
-
-                @Override
-                public int getRowCount() {
-                    return infoRows.length;
-                }
-
-                @Override
-                public int getColumnCount() {
-                    return 2;
-                }
-
-                @Override
-                public boolean isCellEditable(final int rowIndex, final int columnIndex) {
-                    return false;
-                }
-
-                @Override
-                public Object getValueAt(final int rowIndex, final int columnIndex) {
-                    final TableRow infoRow = infoRows[rowIndex];
-                    return switch (columnIndex) {
-                        case 0 -> infoRow.name;
-                        case 1 -> infoRow.valueSupplier.get();
-                        default -> throw new AssertionError();
-                    };
-                }
-
-            });
+            infoTable.setModel(new TableRowModel(infoRows));
 
             metaContainer.add(infoTable);
 
@@ -320,17 +328,17 @@ public class App {
 
                 @Override
                 public void insertUpdate(final DocumentEvent e) {
-                    ((DefaultTableModel) infoTable.getModel()).fireTableDataChanged();
+                    ((AbstractTableModel) infoTable.getModel()).fireTableDataChanged();
                 }
 
                 @Override
                 public void removeUpdate(final DocumentEvent e) {
-                    ((DefaultTableModel) infoTable.getModel()).fireTableDataChanged();
+                    ((AbstractTableModel) infoTable.getModel()).fireTableDataChanged();
                 }
 
                 @Override
                 public void changedUpdate(final DocumentEvent e) {
-                    ((DefaultTableModel) infoTable.getModel()).fireTableDataChanged();
+                    ((AbstractTableModel) infoTable.getModel()).fireTableDataChanged();
                 }
 
             });
