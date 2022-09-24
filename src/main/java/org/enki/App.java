@@ -34,12 +34,16 @@ import java.util.Objects;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 public class App {
 
     private final JLanguageTool languageTool = new JLanguageTool(new AmericanEnglish());
     private final Dictionary dictionary;
+
+    private record TableRow(String name, Supplier<String> valueSupplier) {
+    }
 
     public App() {
         try {
@@ -258,11 +262,19 @@ public class App {
 
             });
 
+            final TableRow[] infoRows = new TableRow[]{
+                    new TableRow("Characters", () -> Integer.toString(getText(contentArea).length())),
+                    new TableRow("Twitter Characters",
+                            () -> Integer.toString(getTwitterCharacters(getText(contentArea)))),
+                    new TableRow("Twitter Characters Remaining",
+                            () -> Integer.toString(280 - getTwitterCharacters(getText(contentArea))))
+            };
+
             infoTable.setModel(new DefaultTableModel() {
 
                 @Override
                 public int getRowCount() {
-                    return 3;
+                    return infoRows.length;
                 }
 
                 @Override
@@ -277,22 +289,10 @@ public class App {
 
                 @Override
                 public Object getValueAt(final int rowIndex, final int columnIndex) {
-                    return switch (rowIndex) {
-                        case 0 -> switch (columnIndex) {
-                            case 0 -> "Characters";
-                            case 1 -> Integer.toString(getText(contentArea).length());
-                            default -> throw new AssertionError();
-                        };
-                        case 1 -> switch (columnIndex) {
-                            case 0 -> "Twitter Characters";
-                            case 1 -> Integer.toString(getTwitterCharacters(getText(contentArea)));
-                            default -> throw new AssertionError();
-                        };
-                        case 2 -> switch (columnIndex) {
-                            case 0 -> "Twitter Characters Remaining";
-                            case 1 -> Integer.toString(280 - getTwitterCharacters(getText(contentArea)));
-                            default -> throw new AssertionError();
-                        };
+                    final TableRow infoRow = infoRows[rowIndex];
+                    return switch (columnIndex) {
+                        case 0 -> infoRow.name;
+                        case 1 -> infoRow.valueSupplier.get();
                         default -> throw new AssertionError();
                     };
                 }
