@@ -147,7 +147,6 @@ public class App {
             super("Parsimonious Publisher");
 
             definitionArea.setEditable(false);
-            //definitionArea.setColumns(40);
 
             final JTextPane contentArea = new ContentPane();
 
