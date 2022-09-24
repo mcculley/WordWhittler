@@ -6,7 +6,6 @@ import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.data.IndexWord;
 import net.sf.extjwnl.data.POS;
 import net.sf.extjwnl.data.Synset;
-import net.sf.extjwnl.data.Word;
 import net.sf.extjwnl.dictionary.Dictionary;
 import org.languagetool.JLanguageTool;
 import org.languagetool.language.AmericanEnglish;
@@ -17,6 +16,7 @@ import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
@@ -30,9 +30,11 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 public class App {
 
@@ -232,6 +234,30 @@ public class App {
 
             final JTable infoTable = new JTable();
 
+            infoTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+
+                private boolean isDanger(final Object value) {
+                    if (value instanceof String) {
+                        final String s = (String) value;
+                        if (isNumeric(s) && s.startsWith("-")) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+
+                @Override
+                public Component getTableCellRendererComponent(final JTable table, final Object value,
+                                                               final boolean isSelected, final boolean hasFocus,
+                                                               final int row, final int column) {
+                    final Component c =
+                            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                    c.setForeground(isDanger(value) ? Color.RED : table.getForeground());
+                    return c;
+                }
+
+            });
+
             infoTable.setModel(new DefaultTableModel() {
 
                 @Override
@@ -312,7 +338,7 @@ public class App {
             final boolean debug = true;
             if (debug) {
                 contentArea.setText(
-                        "WordWhittler is your intelligent writing assistant. It helps you to be more concise and precise. Write or paste your text here too have it checked continuously. Errors will be highlighted in different colours: we will mark seplling errors and we might someday have underilnes. Furthermore grammar error's are highlighted in yellow. It also marks style issues in a reliable manner (someday by underlining them in blue). did you know that you can sea synonyms by clicking (notd double clicking) a word? Its a impressively versatile tool especially if youd like to tell a colleague from over sea's about what happened at 5 PM in the afternoon on Monday, 27 May 2007.");
+                        "WordWhittler is your intelligent writing assistant. It helps you to be more concise and precise. Write or paste your text here too have it checked continuously. Errors will be highlighted in different colours: we will mark seplling errors and we might someday have underilnes. Furthermore grammar error's are highlighted in yellow. It also marks style issues in a reliable manner (someday by underlining them in blue). did you know that you can sea synonyms by clicking (notd double clicking) a word? Its a impressively versatile tool especially if youd like to tell a colleague from over sea's about what happened at 5 PM in the afternoon on Monday, 27 May 2007.\nWordWhittler uses LanguageTool and extJWNL.");
             }
         }
 
@@ -391,6 +417,13 @@ public class App {
             return list.get(i);
         }
 
+    }
+
+    private final Pattern pattern = Pattern.compile("-?\\d+(\\.\\d+)?");
+
+    public boolean isNumeric(final String strNum) {
+        Objects.requireNonNull(strNum);
+        return pattern.matcher(strNum).matches();
     }
 
     public static void main(final String[] args) {
