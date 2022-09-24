@@ -328,12 +328,12 @@ public class App {
 
                 @Override
                 public void insertUpdate(final DocumentEvent e) {
-                    ((AbstractTableModel) infoTable.getModel()).fireTableDataChanged();
+                    changedUpdate(e);
                 }
 
                 @Override
                 public void removeUpdate(final DocumentEvent e) {
-                    ((AbstractTableModel) infoTable.getModel()).fireTableDataChanged();
+                    changedUpdate(e);
                 }
 
                 @Override
