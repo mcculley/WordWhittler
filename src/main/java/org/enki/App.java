@@ -28,6 +28,7 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -36,6 +37,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class App {
 
@@ -110,8 +112,9 @@ public class App {
     private class DocumentFrame extends JFrame {
 
         private final JList<RuleMatch> errorList = new JList<>();
-        private final JLabel wordLabel = new JLabel();
         private final JTextComponent definitionArea = new JTextPane();
+        private String selectedRegion;
+        private Map<POS, IndexWord> selectedWords;
 
         private class ContentPane extends JTextPane {
 
@@ -178,10 +181,14 @@ public class App {
         }
 
         private void setWordOfInterest(final String s) {
-            wordLabel.setText(s);
-            final Map<POS, IndexWord> indexWords = lookup(s);
-            final String fullDefinition = fullDefinition(indexWords);
+            selectedRegion = s;
+            selectedWords = lookup(s);
+            final String fullDefinition = fullDefinition(selectedWords);
             definitionArea.setText(fullDefinition);
+        }
+
+        private static String rootWords(final Map<POS, IndexWord> m) {
+            return String.join(", ", m.values().stream().map(IndexWord::getLemma).collect(Collectors.toSet()));
         }
 
         public DocumentFrame() throws HeadlessException {
@@ -212,6 +219,8 @@ public class App {
 
             errorList.addListSelectionListener(errorListListener);
 
+            final JTable wordTable = new JTable();
+
             contentCaretListener.set(e -> {
                 final Range<Integer> selection =
                         Range.closed(contentArea.getSelectionStart(), contentArea.getSelectionEnd());
@@ -225,6 +234,8 @@ public class App {
                     setWordOfInterest(contentArea.getText()
                             .substring(contentArea.getSelectionStart(), contentArea.getSelectionEnd()));
                 }
+
+                ((AbstractTableModel) wordTable.getModel()).fireTableDataChanged();
 
                 try {
                     final Highlighter h = contentArea.getHighlighter();
@@ -307,12 +318,18 @@ public class App {
 
             infoTable.setModel(new TableRowModel(infoRows));
 
+            final TableRow[] wordTableRows = new TableRow[]{
+                    new TableRow("selection", () -> selectedRegion),
+                    new TableRow("root(s)", () -> rootWords(selectedWords))
+            };
+
+            wordTable.setModel(new TableRowModel(wordTableRows));
+
             metaContainer.add(infoTable);
 
-            final JPanel caretWord = new JPanel();
-            caretWord.add(wordLabel);
+            metaContainer.add(new JSeparator());
 
-            metaContainer.add(caretWord);
+            metaContainer.add(wordTable);
 
             metaContainer.add(new JScrollPane(definitionArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                     JScrollPane.HORIZONTAL_SCROLLBAR_NEVER));
@@ -324,7 +341,7 @@ public class App {
 
             add(mainSplitPane);
 
-            contentArea.getDocument().addDocumentListener(new DocumentListener() {
+            final DocumentListener propagatingDocumentListener = new DocumentListener() {
 
                 @Override
                 public void insertUpdate(final DocumentEvent e) {
@@ -339,9 +356,12 @@ public class App {
                 @Override
                 public void changedUpdate(final DocumentEvent e) {
                     ((AbstractTableModel) infoTable.getModel()).fireTableDataChanged();
+                    ((AbstractTableModel) wordTable.getModel()).fireTableDataChanged();
                 }
 
-            });
+            };
+
+            contentArea.getDocument().addDocumentListener(propagatingDocumentListener);
 
             final boolean debug = true;
             if (debug) {
