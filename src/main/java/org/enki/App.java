@@ -70,7 +70,7 @@ public class App {
 
         private final JList<RuleMatch> errorList = new JList<>();
         private final JLabel wordLabel = new JLabel();
-        private final JTextArea definitionArea = new JTextArea();
+        private final JTextComponent definitionArea = new JTextPane();
 
         private class ContentPane extends JTextPane {
 
@@ -147,6 +147,7 @@ public class App {
             super("Parsimonious Publisher");
 
             definitionArea.setEditable(false);
+            //definitionArea.setColumns(40);
 
             final JTextPane contentArea = new ContentPane();
 
@@ -280,7 +281,8 @@ public class App {
 
             metaContainer.add(caretWord);
 
-            metaContainer.add(new JScrollPane(definitionArea));
+            metaContainer.add(new JScrollPane(definitionArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                    JScrollPane.HORIZONTAL_SCROLLBAR_NEVER));
 
             metaContainer.add(new JScrollPane(errorList));
 
@@ -308,6 +310,11 @@ public class App {
 
             });
 
+            final boolean debug = true;
+            if (debug) {
+                contentArea.setText(
+                        "Parsimonius Publisher is your intelligent writing assistant. It helps you to be more concise and precise. Write or paste your text here too have it checked continuously. Errors will be highlighted in different colours: we will mark seplling errors and we might someday have underilnes. Furthermore grammar error's are highlighted in yellow. It also marks style issues in a reliable manner (someday by underlining them in blue). did you know that you can sea synonyms by clicking (notd double clicking) a word? Its a impressively versatile tool especially if youd like to tell a colleague from over sea's about what happened at 5 PM in the afternoon on Monday, 27 May 2007.");
+            }
         }
 
     }
