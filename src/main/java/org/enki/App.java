@@ -159,7 +159,7 @@ public class App {
 
         }
 
-        private final String fullDefinition(final List<IndexWord> l) {
+        private String fullDefinition(final List<IndexWord> l) {
             final StringBuilder b = new StringBuilder();
             for (final IndexWord word : l) {
                 b.append(word.getPOS());
@@ -459,7 +459,7 @@ public class App {
 
         }
 
-        private TreeNode rootWordTreeNode = new TreeNode() {
+        private final TreeNode rootWordTreeNode = new TreeNode() {
 
             @Override
             public TreeNode getChildAt(final int childIndex) {
@@ -551,14 +551,6 @@ public class App {
             }
         }
 
-        private static Set<String> synonyms(final Collection<IndexWord> m) {
-            return m.stream()
-                    .flatMap(x -> x.getSenses().stream())
-                    .flatMap(x -> x.getWords().stream())
-                    .map(Word::getLemma)
-                    .collect(Collectors.toSet());
-        }
-
         private static Set<Word> synonyms(final IndexWord w) {
             return w.getSenses().stream()
                     .flatMap(x -> x.getWords().stream())
@@ -580,33 +572,14 @@ public class App {
             }
         }
 
-        private static Set<String> targets(final Collection<IndexWord> m, final PointerType type) {
-            return m.stream()
-                    .flatMap(x -> x.getSenses().stream())
-                    .flatMap(x -> getTargetsUnchecked(x, type).stream())
-                    .map(PointerTarget::getSynset)
-                    .flatMap(x -> x.getWords().stream())
-                    .map(Word::getLemma)
-                    .collect(Collectors.toSet());
-        }
-
         private static List<Word> targetsAsList(final IndexWord m, final PointerType type) {
-            final Set<Word> words = m.getSenses().stream()
+            return m.getSenses().stream()
                     .flatMap(x -> getTargetsUnchecked(x, type).stream())
                     .map(PointerTarget::getSynset)
                     .flatMap(x -> x.getWords().stream())
-                    .collect(Collectors.toSet());
-            final List<Word> l = new ArrayList<>(words);
-            l.sort(Comparator.comparing(Word::getLemma));
-            return l;
-        }
-
-        private static Set<String> hypernyms(final Collection<IndexWord> m) {
-            return targets(m, PointerType.HYPERNYM);
-        }
-
-        private static Set<String> antonyms(final Collection<IndexWord> m) {
-            return targets(m, PointerType.ANTONYM);
+                    .distinct()
+                    .sorted(Comparator.comparing(Word::getLemma))
+                    .collect(Collectors.toList());
         }
 
         private static String rootWords(final Collection<IndexWord> m) {
@@ -637,8 +610,7 @@ public class App {
             wordTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
             wordTree.addTreeSelectionListener(e -> {
                 final TreeNode node = (TreeNode) e.getPath().getLastPathComponent();
-                if (node instanceof WordTreeNode) {
-                    final WordTreeNode w = (WordTreeNode) node;
+                if (node instanceof WordTreeNode w) {
                     definitionArea.setText(w.word.getSynset().getGloss());
                 } else {
                     definitionArea.setText("");
@@ -736,11 +708,8 @@ public class App {
             infoTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
 
                 private boolean isDanger(final Object value) {
-                    if (value instanceof String) {
-                        final String s = (String) value;
-                        if (isNumeric(s) && s.startsWith("-")) {
-                            return true;
-                        }
+                    if (value instanceof String s) {
+                        return isNumeric(s) && s.startsWith("-");
                     }
 
                     return false;
