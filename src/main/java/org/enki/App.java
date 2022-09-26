@@ -254,22 +254,91 @@ public class App {
 
         }
 
-        private class IndexWordTreeNode implements TreeNode {
+        private class SynonymsNode implements TreeNode {
 
-            private final IndexWord word;
+            private final IndexWordTreeNode word;
+            private final List<Word> synonyms;
 
-            public IndexWordTreeNode(final IndexWord word) {
+            public SynonymsNode(final IndexWordTreeNode word) {
                 this.word = Objects.requireNonNull(word);
+                this.synonyms = synonymsAsList(word.word);
             }
 
             @Override
             public TreeNode getChildAt(final int childIndex) {
-                return null;
+                return new WordTreeNode(synonyms.get(childIndex), this);
             }
 
             @Override
             public int getChildCount() {
-                return 0;
+                return synonyms.size();
+            }
+
+            @Override
+            public TreeNode getParent() {
+                return word;
+            }
+
+            @Override
+            public int getIndex(final TreeNode node) {
+                return synonyms.indexOf(((WordTreeNode) node).word);
+            }
+
+            @Override
+            public boolean getAllowsChildren() {
+                return true;
+            }
+
+            @Override
+            public boolean isLeaf() {
+                return false;
+            }
+
+            @Override
+            public Enumeration<? extends TreeNode> children() {
+                return Collections.enumeration(
+                        synonyms.stream().map(x -> new WordTreeNode(x, this)).collect(Collectors.toList()));
+            }
+
+            @Override
+            public String toString() {
+                return "synonyms";
+            }
+
+            @Override
+            public boolean equals(final Object o) {
+                if (this == o) return true;
+                if (o == null || getClass() != o.getClass()) return false;
+                final SynonymsNode that = (SynonymsNode) o;
+                return word.equals(that.word);
+            }
+
+            @Override
+            public int hashCode() {
+                return Objects.hash(word);
+            }
+
+        }
+
+        private class IndexWordTreeNode implements TreeNode {
+
+            private final IndexWord word;
+            private final List<TreeNode> children;
+
+            public IndexWordTreeNode(final IndexWord word) {
+                this.word = Objects.requireNonNull(word);
+                this.children = new ArrayList<>();
+                children.add(new SynonymsNode(this));
+            }
+
+            @Override
+            public TreeNode getChildAt(final int childIndex) {
+                return children.get(childIndex);
+            }
+
+            @Override
+            public int getChildCount() {
+                return children.size();
             }
 
             @Override
@@ -279,34 +348,22 @@ public class App {
 
             @Override
             public int getIndex(final TreeNode node) {
-                return -1;
+                return children.indexOf(node);
             }
 
             @Override
             public boolean getAllowsChildren() {
-                return false;
-            }
-
-            @Override
-            public boolean isLeaf() {
                 return true;
             }
 
             @Override
+            public boolean isLeaf() {
+                return false;
+            }
+
+            @Override
             public Enumeration<? extends TreeNode> children() {
-                return new Enumeration<>() {
-
-                    @Override
-                    public boolean hasMoreElements() {
-                        return false;
-                    }
-
-                    @Override
-                    public TreeNode nextElement() {
-                        throw new UnsupportedOperationException();
-                    }
-
-                };
+                return Collections.enumeration(children);
             }
 
             @Override
@@ -408,6 +465,13 @@ public class App {
             return w.getSenses().stream()
                     .flatMap(x -> x.getWords().stream())
                     .collect(Collectors.toSet());
+        }
+
+        private static List<Word> synonymsAsList(final IndexWord w) {
+            final Set<Word> words = synonyms(w);
+            final List<Word> l = new ArrayList<>(words);
+            l.sort(Comparator.comparing(Word::getLemma));
+            return l;
         }
 
         private static List<PointerTarget> getTargetsUnchecked(final Synset s, final PointerType t) {
