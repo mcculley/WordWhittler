@@ -30,6 +30,7 @@ import javax.swing.text.Utilities;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreeSelectionModel;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
@@ -586,6 +587,7 @@ public class App {
             definitionArea.setEditable(false);
             wordTree.setRootVisible(false);
 
+            wordTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
             wordTree.addTreeSelectionListener(e -> {
                 final TreeNode node = (TreeNode) e.getPath().getLastPathComponent();
                 if (node instanceof WordTreeNode) {
