@@ -440,8 +440,6 @@ public class App {
         private void setWordOfInterest(final String s) {
             selectedRegion = s;
             selectedWords = lookupAsList(dictionary, s);
-            final String fullDefinition = fullDefinition(selectedWords);
-            definitionArea.setText(fullDefinition);
 
             wordTree.setModel(makeWordTreeModel());
 
