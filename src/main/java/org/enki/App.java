@@ -37,6 +37,8 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -798,8 +800,12 @@ public class App {
 
             final boolean debug = true;
             if (debug) {
-                contentArea.setText(
-                        "WordWhittler is your intelligent writing assistant. It helps you to be more concise and precise. Write or paste your text here too have it checked continuously. Errors will be highlighted in different colours: we will mark seplling errors and we might someday have underilnes. Furthermore grammar error's are highlighted in yellow. It also marks style issues in a reliable manner (someday by underlining them in blue). did you know that you can sea synonyms by clicking (notd double clicking) a word? Its a impressively versatile tool especially if youd like to tell a colleague from over sea's about what happened at 5 PM in the afternoon on Monday, 27 May 2007.\nWordWhittler uses LanguageTool and extJWNL.");
+                try {
+                    final String testText = Files.readString(Path.of("./demo.txt"));
+                    contentArea.setText(testText);
+                } catch (final IOException e) {
+                    throw new UncheckedIOException(e);
+                }
             }
         }
 
