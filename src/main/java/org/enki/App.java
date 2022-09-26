@@ -27,9 +27,11 @@ import javax.swing.text.Document;
 import javax.swing.text.Highlighter;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Utilities;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -506,17 +508,47 @@ public class App {
             return new DefaultTreeModel(rootWordTreeNode);
         }
 
+        // FIXME: This seems dumb. There is not a better way to do this?
+        private static TreeNode[] nodePath(final TreeNode node) {
+            final TreeNode parent = node.getParent();
+            if (parent == null) {
+                return new TreeNode[]{node};
+            } else {
+                final TreeNode[] parentPath = nodePath(parent);
+                final TreeNode[] result = new TreeNode[parentPath.length + 1];
+                System.arraycopy(parentPath, 0, result, 0, parentPath.length);
+                result[parentPath.length] = node;
+                return result;
+            }
+        }
+
+        // FIXME: This seems dumb. There is not a better way to do this?
+        private static TreePath path(final TreeNode node) {
+            final TreeNode parent = node.getParent();
+            if (parent == null) {
+                return new TreePath(node);
+            } else {
+                return new TreePath(nodePath(node));
+            }
+        }
+
         private void setWordOfInterest(final String s) {
             selectedRegion = s;
             selectedWords = lookupAsList(dictionary, s);
-
             wordTree.setModel(makeWordTreeModel());
 
-            final Set<String> hypernyms = hypernyms(selectedWords);
-            System.err.println("hypernyms=" + hypernyms);
+            final List<TreeNode> allWordTreeNodes = getNodes((TreeNode) wordTree.getModel().getRoot());
+            for (final TreeNode n : allWordTreeNodes) {
+                if (n instanceof SynonymsNode) {
+                    wordTree.expandPath(path(n));
+                }
+            }
 
-            final Set<String> antonyms = antonyms(selectedWords);
-            System.err.println("antonyms=" + antonyms);
+            if (!selectedWords.isEmpty()) {
+                final PointerType type = PointerType.CATEGORY;
+                final List<Word> targets = targetsAsList(selectedWords.iterator().next(), type);
+                System.err.println("targets=" + targets);
+            }
         }
 
         private static Set<String> synonyms(final Collection<IndexWord> m) {
@@ -581,11 +613,26 @@ public class App {
             return String.join(", ", m.stream().map(IndexWord::getLemma).collect(Collectors.toSet()));
         }
 
+        private static List<TreeNode> getNodes(final TreeNode node) {
+            final List<TreeNode> l = new ArrayList<>();
+            l.add(node);
+            for (final TreeNode child : Collections.list(node.children())) {
+                l.addAll(getNodes(child));
+            }
+
+            return l;
+        }
+
         public DocumentFrame() throws HeadlessException {
             super("WordWhittler");
 
             definitionArea.setEditable(false);
             wordTree.setRootVisible(false);
+
+            final DefaultTreeCellRenderer renderer = (DefaultTreeCellRenderer) wordTree.getCellRenderer();
+            renderer.setLeafIcon(null);
+            renderer.setClosedIcon(null);
+            renderer.setOpenIcon(null);
 
             wordTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
             wordTree.addTreeSelectionListener(e -> {
