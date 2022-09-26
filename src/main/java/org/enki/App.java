@@ -179,10 +179,10 @@ public class App {
 
         private class WordTreeNode implements TreeNode {
 
-            private final IndexWord word;
+            private final Word word;
             private final TreeNode parent;
 
-            public WordTreeNode(final IndexWord word, final TreeNode parent) {
+            public WordTreeNode(final Word word, final TreeNode parent) {
                 this.word = Objects.requireNonNull(word);
                 this.parent = Objects.requireNonNull(parent);
             }
@@ -254,11 +254,86 @@ public class App {
 
         }
 
+        private class IndexWordTreeNode implements TreeNode {
+
+            private final IndexWord word;
+
+            public IndexWordTreeNode(final IndexWord word) {
+                this.word = Objects.requireNonNull(word);
+            }
+
+            @Override
+            public TreeNode getChildAt(final int childIndex) {
+                return null;
+            }
+
+            @Override
+            public int getChildCount() {
+                return 0;
+            }
+
+            @Override
+            public TreeNode getParent() {
+                return rootWordTreeNode;
+            }
+
+            @Override
+            public int getIndex(final TreeNode node) {
+                return -1;
+            }
+
+            @Override
+            public boolean getAllowsChildren() {
+                return false;
+            }
+
+            @Override
+            public boolean isLeaf() {
+                return true;
+            }
+
+            @Override
+            public Enumeration<? extends TreeNode> children() {
+                return new Enumeration<>() {
+
+                    @Override
+                    public boolean hasMoreElements() {
+                        return false;
+                    }
+
+                    @Override
+                    public TreeNode nextElement() {
+                        throw new UnsupportedOperationException();
+                    }
+
+                };
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                if (this == o) return true;
+                if (o == null || getClass() != o.getClass()) return false;
+                IndexWordTreeNode that = (IndexWordTreeNode) o;
+                return word.equals(that.word);
+            }
+
+            @Override
+            public int hashCode() {
+                return Objects.hash(word);
+            }
+
+            @Override
+            public String toString() {
+                return word.getLemma() + " (" + word.getPOS().getLabel() + ")";
+            }
+
+        }
+
         private TreeNode rootWordTreeNode = new TreeNode() {
 
             @Override
             public TreeNode getChildAt(final int childIndex) {
-                return new WordTreeNode(selectedWords.get(childIndex), this);
+                return new IndexWordTreeNode(selectedWords.get(childIndex));
             }
 
             @Override
@@ -273,7 +348,7 @@ public class App {
 
             @Override
             public int getIndex(final TreeNode node) {
-                return selectedWords.indexOf(((WordTreeNode) node).word);
+                return selectedWords.indexOf(((IndexWordTreeNode) node).word);
             }
 
             @Override
@@ -289,7 +364,7 @@ public class App {
             @Override
             public Enumeration<? extends TreeNode> children() {
                 return Collections.enumeration(
-                        selectedWords.stream().map(x -> new WordTreeNode(x, this)).collect(Collectors.toList()));
+                        selectedWords.stream().map(IndexWordTreeNode::new).collect(Collectors.toList()));
             }
 
             @Override
@@ -326,6 +401,12 @@ public class App {
                     .flatMap(x -> x.getSenses().stream())
                     .flatMap(x -> x.getWords().stream())
                     .map(Word::getLemma)
+                    .collect(Collectors.toSet());
+        }
+
+        private static Set<Word> synonyms(final IndexWord w) {
+            return w.getSenses().stream()
+                    .flatMap(x -> x.getWords().stream())
                     .collect(Collectors.toSet());
         }
 
