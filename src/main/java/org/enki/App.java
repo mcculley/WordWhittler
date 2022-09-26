@@ -665,8 +665,14 @@ public class App {
                     final String wordAtCaret = getWordAtCaret(contentArea, dot);
                     setWordOfInterest(wordAtCaret);
                 } else {
-                    setWordOfInterest(contentArea.getText()
-                            .substring(contentArea.getSelectionStart(), contentArea.getSelectionEnd()));
+                    final int maxSelection = 20;
+                    String selectedString = contentArea.getText()
+                            .substring(contentArea.getSelectionStart(), contentArea.getSelectionEnd());
+                    if (selectedString.length() > maxSelection) {
+                        selectedString = selectedString.substring(0, maxSelection);
+                    }
+
+                    setWordOfInterest(selectedString);
                 }
 
                 ((AbstractTableModel) wordTable.getModel()).fireTableDataChanged();
