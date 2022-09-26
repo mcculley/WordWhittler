@@ -19,6 +19,8 @@ import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.text.BadLocationException;
@@ -509,6 +511,16 @@ public class App {
 
             definitionArea.setEditable(false);
             wordTree.setRootVisible(false);
+
+            wordTree.addTreeSelectionListener(e -> {
+                final TreeNode node = (TreeNode) e.getPath().getLastPathComponent();
+                if (node instanceof WordTreeNode) {
+                    final WordTreeNode w = (WordTreeNode) node;
+                    definitionArea.setText(w.word.getSynset().getGloss());
+                } else {
+                    definitionArea.setText("");
+                }
+            });
 
             final JTextPane contentArea = new ContentPane();
 
