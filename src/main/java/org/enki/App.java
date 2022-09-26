@@ -248,7 +248,7 @@ public class App {
 
             @Override
             public String toString() {
-                return word.getLemma();
+                return word.getLemma() + " (" + word.getPOS().getLabel() + ")";
             }
 
         }
