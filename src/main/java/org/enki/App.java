@@ -5,7 +5,10 @@ import com.google.common.collect.Range;
 import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.data.IndexWord;
 import net.sf.extjwnl.data.POS;
+import net.sf.extjwnl.data.PointerTarget;
+import net.sf.extjwnl.data.PointerType;
 import net.sf.extjwnl.data.Synset;
+import net.sf.extjwnl.data.Word;
 import net.sf.extjwnl.dictionary.Dictionary;
 import org.languagetool.JLanguageTool;
 import org.languagetool.language.AmericanEnglish;
@@ -28,10 +31,10 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -143,22 +146,6 @@ public class App {
 
         }
 
-        private Map<POS, IndexWord> lookup(final String s) {
-            final ImmutableMap.Builder<POS, IndexWord> m = new ImmutableMap.Builder<>();
-            POS.getAllPOS().forEach(p -> {
-                try {
-                    final IndexWord i = dictionary.lookupIndexWord(p, s);
-                    if (i != null) {
-                        m.put(p, i);
-                    }
-                } catch (final JWNLException e) {
-                    throw new AssertionError(e);
-                }
-            });
-
-            return m.build();
-        }
-
         private final String fullDefinition(final Map<POS, IndexWord> m) {
             final StringBuilder b = new StringBuilder();
             for (final POS p : m.keySet()) {
@@ -182,9 +169,52 @@ public class App {
 
         private void setWordOfInterest(final String s) {
             selectedRegion = s;
-            selectedWords = lookup(s);
+            selectedWords = lookup(dictionary, s);
             final String fullDefinition = fullDefinition(selectedWords);
             definitionArea.setText(fullDefinition);
+
+            final Set<String> synonyms = synonyms(selectedWords);
+            System.err.println("synonyms=" + synonyms);
+
+            final Set<String> hypernyms = hypernyms(selectedWords);
+            System.err.println("hypernyms=" + hypernyms);
+
+            final Set<String> antonyms = antonyms(selectedWords);
+            System.err.println("antonyms=" + antonyms);
+        }
+
+        private static Set<String> synonyms(final Map<POS, IndexWord> m) {
+            return m.values().stream()
+                    .flatMap(x -> x.getSenses().stream())
+                    .flatMap(x -> x.getWords().stream())
+                    .map(Word::getLemma)
+                    .collect(Collectors.toSet());
+        }
+
+        private static List<PointerTarget> getTargetsUnchecked(final Synset s, final PointerType t) {
+            try {
+                return s.getTargets(t);
+            } catch (final JWNLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        private static Set<String> targets(final Map<POS, IndexWord> m, final PointerType type) {
+            return m.values().stream()
+                    .flatMap(x -> x.getSenses().stream())
+                    .flatMap(x -> getTargetsUnchecked(x, type).stream())
+                    .map(PointerTarget::getSynset)
+                    .flatMap(x -> x.getWords().stream())
+                    .map(Word::getLemma)
+                    .collect(Collectors.toSet());
+        }
+
+        private static Set<String> hypernyms(final Map<POS, IndexWord> m) {
+            return targets(m, PointerType.HYPERNYM);
+        }
+
+        private static Set<String> antonyms(final Map<POS, IndexWord> m) {
+            return targets(m, PointerType.ANTONYM);
         }
 
         private static String rootWords(final Map<POS, IndexWord> m) {
@@ -452,6 +482,22 @@ public class App {
     public boolean isNumeric(final String strNum) {
         Objects.requireNonNull(strNum);
         return pattern.matcher(strNum).matches();
+    }
+
+    public static Map<POS, IndexWord> lookup(final Dictionary dictionary, final String s) {
+        final ImmutableMap.Builder<POS, IndexWord> m = new ImmutableMap.Builder<>();
+        POS.getAllPOS().forEach(p -> {
+            try {
+                final IndexWord i = dictionary.lookupIndexWord(p, s);
+                if (i != null) {
+                    m.put(p, i);
+                }
+            } catch (final JWNLException e) {
+                throw new AssertionError(e);
+            }
+        });
+
+        return m.build();
     }
 
     public static void main(final String[] args) {
