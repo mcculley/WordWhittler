@@ -405,7 +405,12 @@ public class App {
                     children.add(new SynonymsNode(this, synonyms));
                 }
 
-                final PointerType[] types = {PointerType.ANTONYM, PointerType.HYPERNYM};
+                final PointerType[] types = {
+                        PointerType.ANTONYM,
+                        PointerType.HYPERNYM,
+                        PointerType.CATEGORY,
+                        PointerType.CATEGORY_MEMBER
+                };
 
                 for (final PointerType type : types) {
                     final List<Word> targets = targetsAsList(this.word, type);
@@ -550,7 +555,7 @@ public class App {
 
             final List<TreeNode> allWordTreeNodes = getNodes((TreeNode) wordTree.getModel().getRoot());
             for (final TreeNode n : allWordTreeNodes) {
-                if (n instanceof SynonymsNode) {
+                if (n instanceof SynonymsNode || n instanceof PointerTypeNode) {
                     wordTree.expandPath(path(n));
                 }
             }
