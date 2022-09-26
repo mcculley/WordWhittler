@@ -262,9 +262,9 @@ public class App {
             private final IndexWordTreeNode word;
             private final List<Word> synonyms;
 
-            public SynonymsNode(final IndexWordTreeNode word) {
+            public SynonymsNode(final IndexWordTreeNode word, final List<Word> synonyms) {
                 this.word = Objects.requireNonNull(word);
-                this.synonyms = synonymsAsList(word.word);
+                this.synonyms = Objects.requireNonNull(synonyms);
             }
 
             @Override
@@ -329,10 +329,10 @@ public class App {
             private final PointerType type;
             private final List<Word> targets;
 
-            public PointerTypeNode(final IndexWordTreeNode word, final PointerType type) {
+            public PointerTypeNode(final IndexWordTreeNode word, final PointerType type, final List<Word> targets) {
                 this.word = Objects.requireNonNull(word);
                 this.type = Objects.requireNonNull(type);
-                this.targets = targetsAsList(word.word, type);
+                this.targets = Objects.requireNonNull(targets);
             }
 
             @Override
@@ -399,9 +399,20 @@ public class App {
             public IndexWordTreeNode(final IndexWord word) {
                 this.word = Objects.requireNonNull(word);
                 this.children = new ArrayList<>();
-                children.add(new SynonymsNode(this));
-                children.add(new PointerTypeNode(this, PointerType.ANTONYM));
-                children.add(new PointerTypeNode(this, PointerType.HYPERNYM));
+
+                final List<Word> synonyms = synonymsAsList(word);
+                if (!synonyms.isEmpty()) {
+                    children.add(new SynonymsNode(this, synonyms));
+                }
+
+                final PointerType[] types = {PointerType.ANTONYM, PointerType.HYPERNYM};
+
+                for (final PointerType type : types) {
+                    final List<Word> targets = targetsAsList(this.word, type);
+                    if (!targets.isEmpty()) {
+                        children.add(new PointerTypeNode(this, type, targets));
+                    }
+                }
             }
 
             @Override
