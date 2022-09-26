@@ -27,13 +27,18 @@ import javax.swing.text.Document;
 import javax.swing.text.Highlighter;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Utilities;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreeNode;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -120,6 +125,7 @@ public class App {
 
         private final JList<RuleMatch> errorList = new JList<>();
         private final JTextComponent definitionArea = new JTextPane();
+        private final JTree wordTree = new JTree();
         private String selectedRegion;
         private List<IndexWord> selectedWords;
 
@@ -171,11 +177,142 @@ public class App {
             return b.toString().trim();
         }
 
+        private class WordTreeNode implements TreeNode {
+
+            private final IndexWord word;
+
+            public WordTreeNode(final IndexWord word) {
+                Objects.requireNonNull(word);
+                this.word = word;
+            }
+
+            @Override
+            public TreeNode getChildAt(final int childIndex) {
+                return null;
+            }
+
+            @Override
+            public int getChildCount() {
+                return 0;
+            }
+
+            @Override
+            public TreeNode getParent() {
+                return rootWordTreeNode;
+            }
+
+            @Override
+            public int getIndex(final TreeNode node) {
+                return -1;
+            }
+
+            @Override
+            public boolean getAllowsChildren() {
+                return false;
+            }
+
+            @Override
+            public boolean isLeaf() {
+                return true;
+            }
+
+            @Override
+            public Enumeration<? extends TreeNode> children() {
+                return new Enumeration<>() {
+
+                    @Override
+                    public boolean hasMoreElements() {
+                        return false;
+                    }
+
+                    @Override
+                    public TreeNode nextElement() {
+                        throw new UnsupportedOperationException();
+                    }
+
+                };
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                if (this == o) return true;
+                if (o == null || getClass() != o.getClass()) return false;
+                WordTreeNode that = (WordTreeNode) o;
+                return word.equals(that.word);
+            }
+
+            @Override
+            public int hashCode() {
+                return Objects.hash(word);
+            }
+
+            @Override
+            public String toString() {
+                return word.getLemma();
+            }
+
+        }
+
+        private TreeNode makeWordTreeNode(final IndexWord word) {
+            return new WordTreeNode(word);
+        }
+
+        private TreeNode rootWordTreeNode = new TreeNode() {
+
+            @Override
+            public TreeNode getChildAt(final int childIndex) {
+                return makeWordTreeNode(selectedWords.get(childIndex));
+            }
+
+            @Override
+            public int getChildCount() {
+                return selectedWords.size();
+            }
+
+            @Override
+            public TreeNode getParent() {
+                return null;
+            }
+
+            @Override
+            public int getIndex(final TreeNode node) {
+                return selectedWords.indexOf(((WordTreeNode) node).word);
+            }
+
+            @Override
+            public boolean getAllowsChildren() {
+                return true;
+            }
+
+            @Override
+            public boolean isLeaf() {
+                return false;
+            }
+
+            @Override
+            public Enumeration<? extends TreeNode> children() {
+                return Collections.enumeration(
+                        selectedWords.stream().map(WordTreeNode::new).collect(Collectors.toList()));
+            }
+
+            @Override
+            public String toString() {
+                return "root";
+            }
+
+        };
+
+        private TreeModel makeWordTreeModel() {
+            return new DefaultTreeModel(rootWordTreeNode);
+        }
+
         private void setWordOfInterest(final String s) {
             selectedRegion = s;
             selectedWords = lookupAsList(dictionary, s);
             final String fullDefinition = fullDefinition(selectedWords);
             definitionArea.setText(fullDefinition);
+
+            wordTree.setModel(makeWordTreeModel());
 
             final Set<String> synonyms = synonyms(selectedWords);
             System.err.println("synonyms=" + synonyms);
@@ -229,6 +366,7 @@ public class App {
             super("WordWhittler");
 
             definitionArea.setEditable(false);
+            wordTree.setRootVisible(false);
 
             final JTextPane contentArea = new ContentPane();
 
@@ -327,6 +465,7 @@ public class App {
                             return true;
                         }
                     }
+
                     return false;
                 }
 
@@ -364,6 +503,8 @@ public class App {
             metaContainer.add(new JSeparator());
 
             metaContainer.add(wordTable);
+
+            metaContainer.add(new JScrollPane(wordTree));
 
             metaContainer.add(new JScrollPane(definitionArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                     JScrollPane.HORIZONTAL_SCROLLBAR_NEVER));
