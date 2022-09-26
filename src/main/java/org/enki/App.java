@@ -554,12 +554,6 @@ public class App {
                     wordTree.expandPath(path(n));
                 }
             }
-
-            if (!selectedWords.isEmpty()) {
-                final PointerType type = PointerType.CATEGORY;
-                final List<Word> targets = targetsAsList(selectedWords.iterator().next(), type);
-                System.err.println("targets=" + targets);
-            }
         }
 
         private static Set<Word> synonyms(final IndexWord w) {
