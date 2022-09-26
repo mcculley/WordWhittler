@@ -31,6 +31,10 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -117,7 +121,7 @@ public class App {
         private final JList<RuleMatch> errorList = new JList<>();
         private final JTextComponent definitionArea = new JTextPane();
         private String selectedRegion;
-        private Map<POS, IndexWord> selectedWords;
+        private List<IndexWord> selectedWords;
 
         private class ContentPane extends JTextPane {
 
@@ -146,12 +150,12 @@ public class App {
 
         }
 
-        private final String fullDefinition(final Map<POS, IndexWord> m) {
+        private final String fullDefinition(final List<IndexWord> l) {
             final StringBuilder b = new StringBuilder();
-            for (final POS p : m.keySet()) {
-                b.append(p.getLabel());
+            for (final IndexWord word : l) {
+                b.append(word.getPOS());
                 b.append('\n');
-                final List<Synset> senses = m.get(p).getSenses();
+                final List<Synset> senses = word.getSenses();
                 final int numSenses = senses.size();
                 for (int i = 0; i < numSenses; i++) {
                     b.append(i + 1);
@@ -169,7 +173,7 @@ public class App {
 
         private void setWordOfInterest(final String s) {
             selectedRegion = s;
-            selectedWords = lookup(dictionary, s);
+            selectedWords = lookupAsList(dictionary, s);
             final String fullDefinition = fullDefinition(selectedWords);
             definitionArea.setText(fullDefinition);
 
@@ -183,8 +187,8 @@ public class App {
             System.err.println("antonyms=" + antonyms);
         }
 
-        private static Set<String> synonyms(final Map<POS, IndexWord> m) {
-            return m.values().stream()
+        private static Set<String> synonyms(final Collection<IndexWord> m) {
+            return m.stream()
                     .flatMap(x -> x.getSenses().stream())
                     .flatMap(x -> x.getWords().stream())
                     .map(Word::getLemma)
@@ -199,8 +203,8 @@ public class App {
             }
         }
 
-        private static Set<String> targets(final Map<POS, IndexWord> m, final PointerType type) {
-            return m.values().stream()
+        private static Set<String> targets(final Collection<IndexWord> m, final PointerType type) {
+            return m.stream()
                     .flatMap(x -> x.getSenses().stream())
                     .flatMap(x -> getTargetsUnchecked(x, type).stream())
                     .map(PointerTarget::getSynset)
@@ -209,16 +213,16 @@ public class App {
                     .collect(Collectors.toSet());
         }
 
-        private static Set<String> hypernyms(final Map<POS, IndexWord> m) {
+        private static Set<String> hypernyms(final Collection<IndexWord> m) {
             return targets(m, PointerType.HYPERNYM);
         }
 
-        private static Set<String> antonyms(final Map<POS, IndexWord> m) {
+        private static Set<String> antonyms(final Collection<IndexWord> m) {
             return targets(m, PointerType.ANTONYM);
         }
 
-        private static String rootWords(final Map<POS, IndexWord> m) {
-            return String.join(", ", m.values().stream().map(IndexWord::getLemma).collect(Collectors.toSet()));
+        private static String rootWords(final Collection<IndexWord> m) {
+            return String.join(", ", m.stream().map(IndexWord::getLemma).collect(Collectors.toSet()));
         }
 
         public DocumentFrame() throws HeadlessException {
@@ -482,6 +486,14 @@ public class App {
     public boolean isNumeric(final String strNum) {
         Objects.requireNonNull(strNum);
         return pattern.matcher(strNum).matches();
+    }
+
+    public static List<IndexWord> lookupAsList(final Dictionary dictionary, final String s) {
+        final Map<POS, IndexWord> m = lookup(dictionary, s);
+        final Set<IndexWord> wordsAsSet = new HashSet<>(m.values());
+        final List<IndexWord> wordsAsList = new ArrayList<>(wordsAsSet);
+        wordsAsList.sort(Comparator.comparing(IndexWord::getLemma));
+        return wordsAsList;
     }
 
     public static Map<POS, IndexWord> lookup(final Dictionary dictionary, final String s) {
