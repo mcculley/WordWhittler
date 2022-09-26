@@ -180,10 +180,11 @@ public class App {
         private class WordTreeNode implements TreeNode {
 
             private final IndexWord word;
+            private final TreeNode parent;
 
-            public WordTreeNode(final IndexWord word) {
-                Objects.requireNonNull(word);
-                this.word = word;
+            public WordTreeNode(final IndexWord word, final TreeNode parent) {
+                this.word = Objects.requireNonNull(word);
+                this.parent = Objects.requireNonNull(parent);
             }
 
             @Override
@@ -198,7 +199,7 @@ public class App {
 
             @Override
             public TreeNode getParent() {
-                return rootWordTreeNode;
+                return parent;
             }
 
             @Override
@@ -253,15 +254,11 @@ public class App {
 
         }
 
-        private TreeNode makeWordTreeNode(final IndexWord word) {
-            return new WordTreeNode(word);
-        }
-
         private TreeNode rootWordTreeNode = new TreeNode() {
 
             @Override
             public TreeNode getChildAt(final int childIndex) {
-                return makeWordTreeNode(selectedWords.get(childIndex));
+                return new WordTreeNode(selectedWords.get(childIndex), this);
             }
 
             @Override
@@ -292,7 +289,7 @@ public class App {
             @Override
             public Enumeration<? extends TreeNode> children() {
                 return Collections.enumeration(
-                        selectedWords.stream().map(WordTreeNode::new).collect(Collectors.toList()));
+                        selectedWords.stream().map(x -> new WordTreeNode(x, this)).collect(Collectors.toList()));
             }
 
             @Override
