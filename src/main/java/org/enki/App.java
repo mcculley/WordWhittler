@@ -552,6 +552,7 @@ public class App {
             selectedRegion = s;
             selectedWords = lookupAsList(dictionary, s);
             wordTree.setModel(makeWordTreeModel());
+            definitionArea.setText("");
 
             final List<TreeNode> allWordTreeNodes = getNodes((TreeNode) wordTree.getModel().getRoot());
             for (final TreeNode n : allWordTreeNodes) {
