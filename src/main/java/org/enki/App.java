@@ -19,8 +19,6 @@ import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.text.BadLocationException;
@@ -322,6 +320,74 @@ public class App {
 
         }
 
+        private class PointerTypeNode implements TreeNode {
+
+            private final IndexWordTreeNode word;
+            private final PointerType type;
+            private final List<Word> targets;
+
+            public PointerTypeNode(final IndexWordTreeNode word, final PointerType type) {
+                this.word = Objects.requireNonNull(word);
+                this.type = Objects.requireNonNull(type);
+                this.targets = targetsAsList(word.word, type);
+            }
+
+            @Override
+            public TreeNode getChildAt(final int childIndex) {
+                return new WordTreeNode(targets.get(childIndex), this);
+            }
+
+            @Override
+            public int getChildCount() {
+                return targets.size();
+            }
+
+            @Override
+            public TreeNode getParent() {
+                return word;
+            }
+
+            @Override
+            public int getIndex(final TreeNode node) {
+                return targets.indexOf(((WordTreeNode) node).word);
+            }
+
+            @Override
+            public boolean getAllowsChildren() {
+                return true;
+            }
+
+            @Override
+            public boolean isLeaf() {
+                return false;
+            }
+
+            @Override
+            public Enumeration<? extends TreeNode> children() {
+                return Collections.enumeration(
+                        targets.stream().map(x -> new WordTreeNode(x, this)).collect(Collectors.toList()));
+            }
+
+            @Override
+            public String toString() {
+                return type.getLabel() + "s";
+            }
+
+            @Override
+            public boolean equals(final Object o) {
+                if (this == o) return true;
+                if (o == null || getClass() != o.getClass()) return false;
+                final PointerTypeNode that = (PointerTypeNode) o;
+                return word.equals(that.word) && type == that.type;
+            }
+
+            @Override
+            public int hashCode() {
+                return Objects.hash(word, type);
+            }
+
+        }
+
         private class IndexWordTreeNode implements TreeNode {
 
             private final IndexWord word;
@@ -331,6 +397,8 @@ public class App {
                 this.word = Objects.requireNonNull(word);
                 this.children = new ArrayList<>();
                 children.add(new SynonymsNode(this));
+                children.add(new PointerTypeNode(this, PointerType.ANTONYM));
+                children.add(new PointerTypeNode(this, PointerType.HYPERNYM));
             }
 
             @Override
@@ -487,6 +555,17 @@ public class App {
                     .flatMap(x -> x.getWords().stream())
                     .map(Word::getLemma)
                     .collect(Collectors.toSet());
+        }
+
+        private static List<Word> targetsAsList(final IndexWord m, final PointerType type) {
+            final Set<Word> words = m.getSenses().stream()
+                    .flatMap(x -> getTargetsUnchecked(x, type).stream())
+                    .map(PointerTarget::getSynset)
+                    .flatMap(x -> x.getWords().stream())
+                    .collect(Collectors.toSet());
+            final List<Word> l = new ArrayList<>(words);
+            l.sort(Comparator.comparing(Word::getLemma));
+            return l;
         }
 
         private static Set<String> hypernyms(final Collection<IndexWord> m) {
