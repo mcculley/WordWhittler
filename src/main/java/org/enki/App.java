@@ -443,9 +443,6 @@ public class App {
 
             wordTree.setModel(makeWordTreeModel());
 
-            final Set<String> synonyms = synonyms(selectedWords);
-            System.err.println("synonyms=" + synonyms);
-
             final Set<String> hypernyms = hypernyms(selectedWords);
             System.err.println("hypernyms=" + hypernyms);
 
