@@ -235,10 +235,10 @@ public class App {
             }
 
             @Override
-            public boolean equals(Object o) {
+            public boolean equals(final Object o) {
                 if (this == o) return true;
                 if (o == null || getClass() != o.getClass()) return false;
-                WordTreeNode that = (WordTreeNode) o;
+                final WordTreeNode that = (WordTreeNode) o;
                 return word.equals(that.word);
             }
 
@@ -310,10 +310,10 @@ public class App {
             }
 
             @Override
-            public boolean equals(Object o) {
+            public boolean equals(final Object o) {
                 if (this == o) return true;
                 if (o == null || getClass() != o.getClass()) return false;
-                IndexWordTreeNode that = (IndexWordTreeNode) o;
+                final IndexWordTreeNode that = (IndexWordTreeNode) o;
                 return word.equals(that.word);
             }
 
