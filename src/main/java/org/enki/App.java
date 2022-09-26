@@ -766,12 +766,13 @@ public class App {
             metaContainer.add(new JScrollPane(definitionArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                     JScrollPane.HORIZONTAL_SCROLLBAR_NEVER));
 
-            metaContainer.add(new JScrollPane(errorList));
-
             final JSplitPane mainSplitPane =
                     new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, metaContainer, new JScrollPane(contentArea));
 
-            add(mainSplitPane);
+            final JSplitPane bottomSplitPane =
+                    new JSplitPane(JSplitPane.VERTICAL_SPLIT, mainSplitPane, new JScrollPane(errorList));
+
+            add(bottomSplitPane);
 
             final DocumentListener propagatingDocumentListener = new DocumentListener() {
 
