@@ -131,6 +131,7 @@ public class App {
         private final JList<RuleMatch> errorList = new JList<>();
         private final JTextComponent definitionArea = new JTextPane();
         private final JTree wordTree = new JTree();
+        private final JSplitPane bottomSplitPane;
         private String selectedRegion;
         private List<IndexWord> selectedWords;
 
@@ -755,6 +756,8 @@ public class App {
             };
 
             infoTable.setModel(new TableRowModel(infoRows));
+            infoTable.getColumnModel().getColumn(0).setMinWidth(180);
+            infoTable.getColumnModel().getColumn(1).setMinWidth(50);
 
             final TableRow[] wordTableRows = new TableRow[]{
                     new TableRow("selection", () -> selectedRegion),
@@ -777,8 +780,7 @@ public class App {
             final JSplitPane mainSplitPane =
                     new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, metaContainer, new JScrollPane(contentArea));
 
-            final JSplitPane bottomSplitPane =
-                    new JSplitPane(JSplitPane.VERTICAL_SPLIT, mainSplitPane, new JScrollPane(errorList));
+            bottomSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, mainSplitPane, new JScrollPane(errorList));
 
             add(bottomSplitPane);
 
@@ -850,9 +852,10 @@ public class App {
     }
 
     private void start() {
-        final JFrame mainFrame = new DocumentFrame();
+        final DocumentFrame mainFrame = new DocumentFrame();
         mainFrame.setSize(800, 600);
         mainFrame.setVisible(true);
+        mainFrame.bottomSplitPane.setDividerLocation(0.80);
     }
 
     private static class TransformingListCellRenderer<T> extends DefaultListCellRenderer {
