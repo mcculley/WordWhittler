@@ -2,6 +2,7 @@ package org.enki;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Range;
+import com.google.common.io.Resources;
 import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.data.IndexWord;
 import net.sf.extjwnl.data.POS;
@@ -41,6 +42,8 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -738,8 +741,14 @@ public class App {
             final JMenuItem aboutMenuItem = new JMenuItem("About...");
             fileMenu.add(aboutMenuItem);
             aboutMenuItem.addActionListener(e -> {
-                final String aboutText = "About!";
-                JOptionPane.showMessageDialog(this, aboutText, "About WordWhittler", JOptionPane.INFORMATION_MESSAGE);
+                final URL aboutResource = getClass().getResource("/about.txt");
+                try {
+                    final String aboutText = Resources.toString(aboutResource, StandardCharsets.UTF_8);
+                    JOptionPane.showMessageDialog(this, aboutText, "About WordWhittler",
+                            JOptionPane.INFORMATION_MESSAGE);
+                } catch (final IOException x) {
+                    throw new UncheckedIOException(x);
+                }
             });
 
             fileMenu.add(new JSeparator());
