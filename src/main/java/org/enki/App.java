@@ -775,9 +775,11 @@ public class App {
 
             metaContainer.add(infoTable);
 
-            metaContainer.add(new JSeparator());
+            metaContainer.add(Box.createVerticalStrut(0));
 
             metaContainer.add(wordTable);
+
+            metaContainer.add(Box.createVerticalStrut(0));
 
             metaContainer.add(new JScrollPane(wordTree));
 
