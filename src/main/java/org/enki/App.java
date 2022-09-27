@@ -139,6 +139,7 @@ public class App {
         private final JTree wordTree = new JTree();
         private final JTextPane contentArea = new ContentPane();
 
+        private File file;
         private final JSplitPane sideSplitPane;
         private final JSplitPane bottomSplitPane;
         private String selectedRegion;
@@ -627,6 +628,15 @@ public class App {
             return l;
         }
 
+        private void updateTitle() {
+            final StringBuilder b = new StringBuilder();
+            if (file != null) {
+                b.append(file.toPath());
+            }
+
+            setTitle(b.toString());
+        }
+
         public DocumentFrame() {
             super("WordWhittler");
 
@@ -881,7 +891,10 @@ public class App {
         }
 
         private void loadFile(final File file) throws IOException {
-            contentArea.setText(Files.readString(file.toPath()));
+            final String content = Files.readString(file.toPath());
+            this.file = file;
+            contentArea.setText(content);
+            updateTitle();
         }
 
     }
