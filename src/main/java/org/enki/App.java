@@ -43,6 +43,8 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -140,6 +142,8 @@ public class App {
         private final JTextPane contentArea = new ContentPane();
 
         private File file;
+        private String savedHash;
+
         private final JSplitPane sideSplitPane;
         private final JSplitPane bottomSplitPane;
         private String selectedRegion;
@@ -634,6 +638,12 @@ public class App {
                 b.append(file.toPath());
             }
 
+            final String currentHash = hash(getText(contentArea));
+            final boolean clean = savedHash != null && savedHash.equals(currentHash);
+            if (!clean) {
+                b.append(" (unsaved)");
+            }
+
             setTitle(b.toString());
         }
 
@@ -873,6 +883,7 @@ public class App {
                 public void changedUpdate(final DocumentEvent e) {
                     ((AbstractTableModel) infoTable.getModel()).fireTableDataChanged();
                     ((AbstractTableModel) wordTable.getModel()).fireTableDataChanged();
+                    updateTitle();
                 }
 
             };
@@ -890,9 +901,20 @@ public class App {
             }
         }
 
+        private static String hash(final String s) {
+            try {
+                final MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+                messageDigest.update(s.getBytes());
+                return new String(messageDigest.digest());
+            } catch (final NoSuchAlgorithmException e) {
+                throw new AssertionError(e);
+            }
+        }
+
         private void loadFile(final File file) throws IOException {
             final String content = Files.readString(file.toPath());
             this.file = file;
+            savedHash = hash(content);
             contentArea.setText(content);
             updateTitle();
         }
