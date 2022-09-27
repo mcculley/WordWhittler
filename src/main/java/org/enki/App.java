@@ -638,6 +638,7 @@ public class App {
                 b.append(file.toPath());
             }
 
+            // FIXME: Maybe just keep whole old text.
             final String currentHash = hash(getText(contentArea));
             final boolean clean = savedHash != null && savedHash.equals(currentHash);
             if (!clean) {
