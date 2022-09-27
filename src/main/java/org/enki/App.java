@@ -34,6 +34,7 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -621,11 +622,26 @@ public class App {
             return l;
         }
 
-        public DocumentFrame() throws HeadlessException {
+        public DocumentFrame() {
             super("WordWhittler");
 
             definitionArea.setEditable(false);
             wordTree.setRootVisible(false);
+
+            final JMenuBar menuBar = new JMenuBar();
+            setJMenuBar(menuBar);
+
+            final JMenu fileMenu = new JMenu("File");
+            menuBar.add(fileMenu);
+
+            fileMenu.add(new JSeparator());
+
+            final JMenuItem quitMenuItem = new JMenuItem("Quit", KeyEvent.VK_Q);
+            fileMenu.add(quitMenuItem);
+            quitMenuItem.addActionListener(e -> {
+                // FIXME: Check that the file has no unsaved changes.
+                System.exit(0);
+            });
 
             final DefaultTreeCellRenderer renderer = (DefaultTreeCellRenderer) wordTree.getCellRenderer();
             renderer.setLeafIcon(null);
