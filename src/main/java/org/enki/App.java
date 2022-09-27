@@ -140,10 +140,10 @@ public class App {
         private final JTextComponent definitionArea = new JTextPane();
         private final JTree wordTree = new JTree();
         private final JTextPane contentArea = new ContentPane();
+        private final JMenuItem saveMenuItem;
 
         private File file;
         private String savedHash;
-
         private final JSplitPane sideSplitPane;
         private final JSplitPane bottomSplitPane;
         private String selectedRegion;
@@ -697,6 +697,51 @@ public class App {
                 setVisible(false);
             });
 
+            saveMenuItem = new JMenuItem("Save", KeyEvent.VK_S);
+            fileMenu.add(saveMenuItem);
+            saveMenuItem.setEnabled(false);
+            saveMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.META_DOWN_MASK));
+            saveMenuItem.addActionListener(e -> {
+                try {
+                    final String content = getText(contentArea);
+                    Files.write(file.toPath(), content.getBytes());
+                    savedHash = hash(content);
+                } catch (final IOException x) {
+                    JOptionPane.showMessageDialog(this, x, "error saving", JOptionPane.ERROR_MESSAGE);
+                }
+            });
+
+            final JMenuItem saveAsMenuItem = new JMenuItem("Save As...", KeyEvent.VK_A);
+            fileMenu.add(saveAsMenuItem);
+            saveAsMenuItem.setAccelerator(
+                    KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.META_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
+            saveAsMenuItem.addActionListener(e -> {
+                final JFileChooser fileChooser = new JFileChooser();
+                int result = fileChooser.showSaveDialog(this);
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    final File selectedFile = fileChooser.getSelectedFile();
+                    try {
+                        file = selectedFile;
+                        final String content = getText(contentArea);
+                        Files.write(file.toPath(), content.getBytes());
+                        savedHash = hash(content);
+                        updateTitle();
+                        saveMenuItem.setEnabled(true);
+                    } catch (final IOException x) {
+                        JOptionPane.showMessageDialog(this, x, "error saving", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            });
+
+            fileMenu.add(new JSeparator());
+
+            final JMenuItem aboutMenuItem = new JMenuItem("About...");
+            fileMenu.add(aboutMenuItem);
+            aboutMenuItem.addActionListener(e -> {
+                final String aboutText = "About!";
+                JOptionPane.showMessageDialog(this, aboutText, "About WordWhittler", JOptionPane.INFORMATION_MESSAGE);
+            });
+
             fileMenu.add(new JSeparator());
 
             final JMenuItem quitMenuItem = new JMenuItem("Quit", KeyEvent.VK_Q);
@@ -928,6 +973,7 @@ public class App {
             savedHash = hash(content);
             contentArea.setText(content);
             updateTitle();
+            saveMenuItem.setEnabled(true);
         }
 
     }
