@@ -565,6 +565,10 @@ public class App {
             }
         }
 
+        private static int wordCount(final String s) {
+            return s.split(" ").length;
+        }
+
         private static Set<Word> synonyms(final IndexWord w) {
             return w.getSenses().stream()
                     .flatMap(x -> x.getWords().stream())
@@ -749,6 +753,7 @@ public class App {
 
             final TableRow[] infoRows = new TableRow[]{
                     new TableRow("Characters", () -> Integer.toString(getText(contentArea).length())),
+                    new TableRow("Words", () -> Integer.toString(wordCount(getText(contentArea)))),
                     new TableRow("Twitter Characters",
                             () -> Integer.toString(getTwitterCharacters(getText(contentArea)))),
                     new TableRow("Twitter Characters Remaining",
