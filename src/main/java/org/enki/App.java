@@ -689,6 +689,16 @@ public class App {
 
             fileMenu.add(new JSeparator());
 
+            final JMenuItem closeMenuItem = new JMenuItem("Close", KeyEvent.VK_C);
+            fileMenu.add(closeMenuItem);
+            closeMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, InputEvent.META_DOWN_MASK));
+            closeMenuItem.addActionListener(e -> {
+                // FIXME: Make sure there are no unsaved changes.
+                setVisible(false);
+            });
+
+            fileMenu.add(new JSeparator());
+
             final JMenuItem quitMenuItem = new JMenuItem("Quit", KeyEvent.VK_Q);
             fileMenu.add(quitMenuItem);
             quitMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, InputEvent.META_DOWN_MASK));
