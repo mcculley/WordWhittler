@@ -746,7 +746,8 @@ public class App {
                                                                final int row, final int column) {
                     final Component c =
                             super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                    c.setForeground(isDanger(value) ? Color.RED : table.getForeground());
+                    c.setForeground(isDanger(value) ? Color.RED :
+                            isSelected ? table.getSelectionForeground() : table.getForeground());
                     return c;
                 }
 
