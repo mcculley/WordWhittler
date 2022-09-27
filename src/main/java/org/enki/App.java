@@ -34,6 +34,8 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -637,12 +639,16 @@ public class App {
             final JMenu fileMenu = new JMenu("File");
             menuBar.add(fileMenu);
 
+            // FIXME: Make accelerators compliant when running on Windows. I am using Mac standards here.
+
             final JMenuItem newMenuItem = new JMenuItem("New", KeyEvent.VK_N);
             fileMenu.add(newMenuItem);
+            newMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.META_DOWN_MASK));
             newMenuItem.addActionListener(e -> createNewDocumentFrame());
 
             final JMenuItem openMenuItem = new JMenuItem("Open", KeyEvent.VK_O);
             fileMenu.add(openMenuItem);
+            openMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.META_DOWN_MASK));
             openMenuItem.addActionListener(e -> {
                 final JFileChooser fileChooser = new JFileChooser();
                 int result = fileChooser.showOpenDialog(this);
@@ -664,6 +670,7 @@ public class App {
 
             final JMenuItem quitMenuItem = new JMenuItem("Quit", KeyEvent.VK_Q);
             fileMenu.add(quitMenuItem);
+            quitMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, InputEvent.META_DOWN_MASK));
             quitMenuItem.addActionListener(e -> {
                 // FIXME: Check that the file has no unsaved changes.
                 System.exit(0);
