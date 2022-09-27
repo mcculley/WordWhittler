@@ -36,6 +36,7 @@ import javax.swing.tree.TreeSelectionModel;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -134,6 +135,8 @@ public class App {
         private final JList<RuleMatch> errorList = new JList<>();
         private final JTextComponent definitionArea = new JTextPane();
         private final JTree wordTree = new JTree();
+        private final JTextPane contentArea = new ContentPane();
+
         private final JSplitPane sideSplitPane;
         private final JSplitPane bottomSplitPane;
         private String selectedRegion;
@@ -638,6 +641,25 @@ public class App {
             fileMenu.add(newMenuItem);
             newMenuItem.addActionListener(e -> createNewDocumentFrame());
 
+            final JMenuItem openMenuItem = new JMenuItem("Open", KeyEvent.VK_O);
+            fileMenu.add(openMenuItem);
+            openMenuItem.addActionListener(e -> {
+                final JFileChooser fileChooser = new JFileChooser();
+                int result = fileChooser.showOpenDialog(this);
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    final File selectedFile = fileChooser.getSelectedFile();
+                    final DocumentFrame newFrame = createNewDocumentFrame();
+                    try {
+                        newFrame.loadFile(selectedFile);
+                    } catch (final IOException x) {
+                        // FIXME: Load the file before creating the new window.
+                        JOptionPane.showMessageDialog(this, x, "error loading", JOptionPane.ERROR_MESSAGE);
+                        newFrame.setVisible(false);
+                        System.err.println(x);
+                    }
+                }
+            });
+
             fileMenu.add(new JSeparator());
 
             final JMenuItem quitMenuItem = new JMenuItem("Quit", KeyEvent.VK_Q);
@@ -661,8 +683,6 @@ public class App {
                     definitionArea.setText("");
                 }
             });
-
-            final JTextPane contentArea = new ContentPane();
 
             final AtomicReference<CaretListener> contentCaretListener = new AtomicReference<>();
 
@@ -853,6 +873,10 @@ public class App {
             }
         }
 
+        private void loadFile(final File file) throws IOException {
+            contentArea.setText(Files.readString(file.toPath()));
+        }
+
     }
 
     private static int getTwitterCharacters(final String s) {
@@ -887,7 +911,7 @@ public class App {
         return getText(tc).substring(m.getFromPos(), m.getToPos());
     }
 
-    private void createNewDocumentFrame() {
+    private DocumentFrame createNewDocumentFrame() {
         final DocumentFrame mainFrame = new DocumentFrame();
         mainFrame.setSize(1200, 1000);
         mainFrame.setVisible(true);
@@ -895,6 +919,8 @@ public class App {
             mainFrame.bottomSplitPane.setDividerLocation(0.80);
             mainFrame.sideSplitPane.setDividerLocation(0.50);
         });
+
+        return mainFrame;
     }
 
     private static class TransformingListCellRenderer<T> extends DefaultListCellRenderer {
