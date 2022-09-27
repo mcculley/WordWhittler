@@ -48,6 +48,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicReference;
@@ -564,6 +565,10 @@ public class App {
                     wordTree.expandPath(path(n));
                 }
             }
+
+            final Optional<TreeNode> firstWord =
+                    allWordTreeNodes.stream().filter(x -> x instanceof WordTreeNode).findFirst();
+            firstWord.ifPresent(treeNode -> wordTree.setSelectionPath(path(treeNode)));
         }
 
         private static long wordCount(final String s) {
