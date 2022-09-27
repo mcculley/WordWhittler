@@ -634,6 +634,10 @@ public class App {
             final JMenu fileMenu = new JMenu("File");
             menuBar.add(fileMenu);
 
+            final JMenuItem newMenuItem = new JMenuItem("New", KeyEvent.VK_N);
+            fileMenu.add(newMenuItem);
+            newMenuItem.addActionListener(e -> createNewDocumentFrame());
+
             fileMenu.add(new JSeparator());
 
             final JMenuItem quitMenuItem = new JMenuItem("Quit", KeyEvent.VK_Q);
@@ -883,7 +887,7 @@ public class App {
         return getText(tc).substring(m.getFromPos(), m.getToPos());
     }
 
-    private void start() {
+    private void createNewDocumentFrame() {
         final DocumentFrame mainFrame = new DocumentFrame();
         mainFrame.setSize(1200, 1000);
         mainFrame.setVisible(true);
@@ -962,7 +966,7 @@ public class App {
     }
 
     public static void main(final String[] args) {
-        SwingUtilities.invokeLater(() -> new App().start());
+        SwingUtilities.invokeLater(() -> new App().createNewDocumentFrame());
     }
 
 }
