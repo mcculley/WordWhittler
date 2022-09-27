@@ -780,11 +780,12 @@ public class App {
 
             metaContainer.add(new JScrollPane(wordTree));
 
-            metaContainer.add(new JScrollPane(definitionArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                    JScrollPane.HORIZONTAL_SCROLLBAR_NEVER));
+            final JSplitPane sideSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, metaContainer,
+                    new JScrollPane(definitionArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                            JScrollPane.HORIZONTAL_SCROLLBAR_NEVER));
 
             final JSplitPane mainSplitPane =
-                    new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, metaContainer, new JScrollPane(contentArea));
+                    new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, sideSplit, new JScrollPane(contentArea));
 
             bottomSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, mainSplitPane, new JScrollPane(errorList));
 
