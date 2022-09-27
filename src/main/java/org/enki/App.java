@@ -55,6 +55,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class App {
 
@@ -565,8 +566,8 @@ public class App {
             }
         }
 
-        private static int wordCount(final String s) {
-            return s.split(" ").length;
+        private static long wordCount(final String s) {
+            return Stream.of(s.split("\r?\n|\r| ")).filter(x -> x.trim().length() > 0).count();
         }
 
         private static Set<Word> synonyms(final IndexWord w) {
@@ -753,7 +754,7 @@ public class App {
 
             final TableRow[] infoRows = new TableRow[]{
                     new TableRow("Characters", () -> Integer.toString(getText(contentArea).length())),
-                    new TableRow("Words", () -> Integer.toString(wordCount(getText(contentArea)))),
+                    new TableRow("Words", () -> Long.toString(wordCount(getText(contentArea)))),
                     new TableRow("Twitter Characters",
                             () -> Integer.toString(getTwitterCharacters(getText(contentArea)))),
                     new TableRow("Twitter Characters Remaining",
