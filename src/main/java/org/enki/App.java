@@ -133,6 +133,7 @@ public class App {
         private final JList<RuleMatch> errorList = new JList<>();
         private final JTextComponent definitionArea = new JTextPane();
         private final JTree wordTree = new JTree();
+        private final JSplitPane sideSplitPane;
         private final JSplitPane bottomSplitPane;
         private String selectedRegion;
         private List<IndexWord> selectedWords;
@@ -788,12 +789,12 @@ public class App {
 
             metaContainer.add(new JScrollPane(wordTree));
 
-            final JSplitPane sideSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, metaContainer,
+            sideSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, metaContainer,
                     new JScrollPane(definitionArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                             JScrollPane.HORIZONTAL_SCROLLBAR_NEVER));
 
             final JSplitPane mainSplitPane =
-                    new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, sideSplit, new JScrollPane(contentArea));
+                    new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, sideSplitPane, new JScrollPane(contentArea));
 
             bottomSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, mainSplitPane, new JScrollPane(errorList));
 
@@ -868,9 +869,12 @@ public class App {
 
     private void start() {
         final DocumentFrame mainFrame = new DocumentFrame();
-        mainFrame.setSize(800, 600);
+        mainFrame.setSize(1200, 1000);
         mainFrame.setVisible(true);
-        mainFrame.bottomSplitPane.setDividerLocation(0.80);
+        SwingUtilities.invokeLater(() -> {
+            mainFrame.bottomSplitPane.setDividerLocation(0.80);
+            mainFrame.sideSplitPane.setDividerLocation(0.50);
+        });
     }
 
     private static class TransformingListCellRenderer<T> extends DefaultListCellRenderer {
