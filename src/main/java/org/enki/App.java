@@ -973,7 +973,7 @@ public class App {
 
             contentArea.getDocument().addDocumentListener(propagatingDocumentListener);
 
-            final boolean debug = true;
+            final boolean debug = false;
             if (debug) {
                 try {
                     final String testText = Files.readString(Path.of("./demo.txt"));
