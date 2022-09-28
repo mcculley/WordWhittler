@@ -87,7 +87,7 @@
                 <configuration>
                     <includes>
                         <include>target/classes/version.txt</include>
-                        <include>target/classes/about.txt</include>
+                        <include>target/classes/about.html</include>
                     </includes>
                     <regex>false</regex>
                     <token>PROJECT_VERSION</token>

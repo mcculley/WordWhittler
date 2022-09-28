@@ -765,7 +765,7 @@ public class App {
             final JMenuItem aboutMenuItem = new JMenuItem("About...");
             fileMenu.add(aboutMenuItem);
             aboutMenuItem.addActionListener(e -> {
-                final URL aboutResource = getClass().getResource("/about.txt");
+                final URL aboutResource = getClass().getResource("/about.html");
                 try {
                     final JEditorPane p = new JEditorPane();
                     p.setEditable(false);
