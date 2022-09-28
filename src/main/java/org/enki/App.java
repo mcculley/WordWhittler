@@ -789,8 +789,8 @@ public class App {
                 }
             };
 
-            errorList.setCellRenderer(new TransformingListCellRenderer<>(
-                    (Function<RuleMatch, String>) ruleMatch -> {
+            errorList.setCellRenderer(new TransformingListCellRenderer<RuleMatch>(
+                    ruleMatch -> {
                         final String region = getRegion(contentArea, ruleMatch);
                         return region.trim() + ": " + message(ruleMatch);
                     }));
