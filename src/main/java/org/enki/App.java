@@ -44,7 +44,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -766,9 +765,13 @@ public class App {
             aboutMenuItem.addActionListener(e -> {
                 final URL aboutResource = getClass().getResource("/about.txt");
                 try {
-                    final String aboutText = Resources.toString(aboutResource, StandardCharsets.UTF_8);
-                    JOptionPane.showMessageDialog(this, aboutText, "About WordWhittler",
-                            JOptionPane.INFORMATION_MESSAGE);
+                    final JEditorPane p = new JEditorPane();
+                    p.setEditable(false);
+                    p.setContentType("text/html");
+                    p.setPage(aboutResource);
+                    final JScrollPane s = new JScrollPane(p);
+                    p.setPreferredSize(new Dimension(600, 200));
+                    JOptionPane.showMessageDialog(this, s, "About WordWhittler", JOptionPane.INFORMATION_MESSAGE);
                 } catch (final IOException x) {
                     throw new UncheckedIOException(x);
                 }
