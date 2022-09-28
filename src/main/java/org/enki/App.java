@@ -21,6 +21,7 @@ import javax.swing.*;
 import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -43,6 +44,7 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -769,6 +771,18 @@ public class App {
                     p.setEditable(false);
                     p.setContentType("text/html");
                     p.setPage(aboutResource);
+                    p.addHyperlinkListener(hyperlinkEvent -> {
+                        if (hyperlinkEvent.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                            final URL url = hyperlinkEvent.getURL();
+                            try {
+                                Desktop.getDesktop().browse(url.toURI());
+                            } catch (final IOException ex) {
+                                JOptionPane.showMessageDialog(this, ex, "error opening", JOptionPane.ERROR_MESSAGE);
+                            } catch (final URISyntaxException ex) {
+                                throw new AssertionError(ex);
+                            }
+                        }
+                    });
                     final JScrollPane s = new JScrollPane(p);
                     p.setPreferredSize(new Dimension(600, 200));
                     JOptionPane.showMessageDialog(this, s, "About WordWhittler", JOptionPane.INFORMATION_MESSAGE);
