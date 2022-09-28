@@ -522,7 +522,11 @@ public class App {
 
             @Override
             public int getChildCount() {
-                return selectedWords.size();
+                if (selectedWords == null) {
+                    return 0;
+                } else {
+                    return selectedWords.size();
+                }
             }
 
             @Override
@@ -674,6 +678,7 @@ public class App {
 
             definitionArea.setEditable(false);
             wordTree.setRootVisible(false);
+            wordTree.setModel(makeWordTreeModel());
 
             final JMenuBar menuBar = new JMenuBar();
             setJMenuBar(menuBar);
