@@ -1,5 +1,1 @@
-WordWhittler vPROJECT_VERSION
-
-WordWhittler is an intelligent writing assistant.
-
-WordWhittler uses LanguageTool and extJWNL.
+<html> <body> WordWhittler vPROJECT_VERSION WordWhittler is an intelligent writing assistant.  WordWhittler uses LanguageTool and extJWNL.  </body> </html>
