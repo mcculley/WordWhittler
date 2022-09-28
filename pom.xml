@@ -6,11 +6,10 @@
 
     <groupId>org.enki</groupId>
     <artifactId>ParsimoniusPublisher</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.0.1</version>
 
-    <name>ParsimoniusPublisher</name>
-    <!-- FIXME change it to the project's website -->
-    <url>http://www.example.com</url>
+    <name>WordWhittler</name>
+    <url>https://mcculley.github.io/WordWhittler/</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -40,6 +39,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.vdurmont</groupId>
+            <artifactId>semver4j</artifactId>
+            <version>3.1.0</version>
+        </dependency>
+
+        <dependency>
             <groupId>net.sf.extjwnl</groupId>
             <artifactId>extjwnl</artifactId>
             <version>2.0.5</version>
@@ -63,6 +68,29 @@
                 <configuration>
                     <source>16</source>
                     <target>16</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>maven-replacer-plugin</artifactId>
+                <version>1.3.2</version>
+                <executions>
+                    <execution>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                    </execution>
+                </executions>
+
+                <configuration>
+                    <includes>
+                        <include>target/classes/version.txt</include>
+                    </includes>
+                    <regex>false</regex>
+                    <token>PROJECT_VERSION</token>
+                    <value>${project.version}</value>
                 </configuration>
             </plugin>
 

@@ -1,8 +1,10 @@
 package org.enki;
 
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Range;
 import com.google.common.io.Resources;
+import com.vdurmont.semver4j.Semver;
 import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.data.IndexWord;
 import net.sf.extjwnl.data.POS;
@@ -73,6 +75,23 @@ public class App {
 
     private record TableRow(String name, Supplier<String> valueSupplier) {
     }
+
+    public static Semver getVersion() {
+        try {
+            final URL versionResource = App.class.getResource("/version.txt");
+            final Semver devVersion = new Semver("0.0.0");
+            if (versionResource == null) {
+                return devVersion;
+            }
+
+            final String s = Resources.toString(versionResource, Charsets.US_ASCII).trim();
+            return s.equals("PROJECT_VERSION") ? devVersion : new Semver(s);
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static final Semver version = getVersion();
 
     private static class TableRowModel extends AbstractTableModel {
 
@@ -1099,6 +1118,7 @@ public class App {
     }
 
     public static void main(final String[] args) {
+        System.out.println("starting WordWhittler v" + version);
         SwingUtilities.invokeLater(() -> new App().createNewDocumentFrame());
     }
 
