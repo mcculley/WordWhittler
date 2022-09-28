@@ -924,7 +924,7 @@ public class App {
 
             final TableRow[] wordTableRows = new TableRow[]{
                     new TableRow("selection", () -> selectedRegion),
-                    new TableRow("root(s)", () -> rootWords(selectedWords))
+                    new TableRow("root(s)", () -> selectedWords == null ? "" : rootWords(selectedWords))
             };
 
             wordTable.setModel(new TableRowModel(wordTableRows));
