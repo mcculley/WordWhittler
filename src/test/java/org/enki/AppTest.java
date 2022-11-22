@@ -6,38 +6,29 @@ import static org.junit.Assert.assertTrue;
 import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.data.IndexWord;
 import net.sf.extjwnl.data.POS;
+import net.sf.extjwnl.data.Synset;
 import net.sf.extjwnl.dictionary.Dictionary;
 import org.junit.Test;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.Spliterator;
-import java.util.Spliterators;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 public class AppTest {
 
-    private static <T> Stream<T> toStream(final Iterator<T> i) {
-        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(i, Spliterator.ORDERED), false);
-    }
-
-    private static Iterator<IndexWord> getIndexWordIteratorUnchecked(final Dictionary dictionary, final POS p) {
-        try {
-            return dictionary.getIndexWordIterator(p);
-        } catch (final JWNLException e) {
-            throw new RuntimeException(e);
-        }
+    @Test
+    public void testWordySynonyms() throws JWNLException {
+        final Dictionary dictionary = Dictionary.getDefaultResourceInstance();
+        final Map<String, Synset> phraseToWord = WordNetUtilities.phrasesToWords(dictionary);
+        System.out.println("phraseToWord=" + phraseToWord);
     }
 
     //@Test
     public void testDictionary() throws JWNLException {
         final Dictionary dictionary = Dictionary.getDefaultResourceInstance();
         final Set<IndexWord> s = POS.getAllPOS().stream()
-                .flatMap(p -> toStream(getIndexWordIteratorUnchecked(dictionary, p)))
+                .flatMap(p -> WordNetUtilities.toStream(WordNetUtilities.getIndexWordIteratorUnchecked(dictionary, p)))
                 .collect(Collectors.toSet());
         //  System.out.println("all index words = " + s);
         s.forEach(word -> {
