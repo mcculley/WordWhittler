@@ -13,6 +13,8 @@ import net.sf.extjwnl.data.PointerType;
 import net.sf.extjwnl.data.Synset;
 import net.sf.extjwnl.data.Word;
 import net.sf.extjwnl.dictionary.Dictionary;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.languagetool.JLanguageTool;
 import org.languagetool.language.AmericanEnglish;
 import org.languagetool.rules.RuleMatch;
@@ -77,7 +79,8 @@ public class App {
     private record TableRow(String name, Supplier<String> valueSupplier) {
     }
 
-    public static Semver getVersion() {
+    public static @NotNull
+    Semver getVersion() {
         try {
             final URL versionResource = App.class.getResource("/version.txt");
             final Semver devVersion = new Semver("0.0.0");
@@ -137,7 +140,8 @@ public class App {
         }
     }
 
-    private static String getText(final JTextComponent t) {
+    private static @NotNull
+    String getText(@NotNull final JTextComponent t) {
         final Document doc = t.getDocument();
         final int length = doc.getLength();
         try {
@@ -147,12 +151,12 @@ public class App {
         }
     }
 
-    private static boolean isURL(final String s) {
+    private static boolean isURL(@NotNull final String s) {
         // FIXME: Detect domain in accordance with Twitter rules.
         return s.startsWith("http://") || s.startsWith("https://");
     }
 
-    private static String message(final RuleMatch match) {
+    private static String message(@NotNull final RuleMatch match) {
         return match.getMessage().replace("<suggestion>", "'").replaceAll("</suggestion>", "'");
     }
 
@@ -177,7 +181,8 @@ public class App {
                 setToolTipText("");
             }
 
-            private RuleMatch findError(final int position) {
+            private @Nullable
+            RuleMatch findError(final int position) {
                 final int numErrors = errorList.getModel().getSize();
                 for (int i = 0; i < numErrors; i++) {
                     final RuleMatch m = errorList.getModel().getElementAt(i);
@@ -190,7 +195,8 @@ public class App {
             }
 
             @Override
-            public String getToolTipText(final MouseEvent event) {
+            public @Nullable
+            String getToolTipText(@NotNull final MouseEvent event) {
                 final int position = viewToModel2D(event.getPoint());
                 final RuleMatch m = findError(position);
                 return m == null ? null : message(m);
@@ -198,7 +204,8 @@ public class App {
 
         }
 
-        private String fullDefinition(final List<IndexWord> l) {
+        private @NotNull
+        String fullDefinition(@NotNull final List<IndexWord> l) {
             final StringBuilder b = new StringBuilder();
             for (final IndexWord word : l) {
                 b.append(word.getPOS());
@@ -224,7 +231,7 @@ public class App {
             private final Word word;
             private final TreeNode parent;
 
-            public WordTreeNode(final Word word, final TreeNode parent) {
+            public WordTreeNode(@NotNull final Word word, @NotNull final TreeNode parent) {
                 this.word = Objects.requireNonNull(word);
                 this.parent = Objects.requireNonNull(parent);
             }
@@ -301,7 +308,7 @@ public class App {
             private final IndexWordTreeNode word;
             private final List<Word> synonyms;
 
-            public SynonymsNode(final IndexWordTreeNode word, final List<Word> synonyms) {
+            public SynonymsNode(@NotNull final IndexWordTreeNode word, @NotNull final List<Word> synonyms) {
                 this.word = Objects.requireNonNull(word);
                 this.synonyms = Objects.requireNonNull(synonyms);
             }
@@ -368,7 +375,8 @@ public class App {
             private final PointerType type;
             private final List<Word> targets;
 
-            public PointerTypeNode(final IndexWordTreeNode word, final PointerType type, final List<Word> targets) {
+            public PointerTypeNode(@NotNull final IndexWordTreeNode word, @NotNull final PointerType type,
+                                   @NotNull final List<Word> targets) {
                 this.word = Objects.requireNonNull(word);
                 this.type = Objects.requireNonNull(type);
                 this.targets = Objects.requireNonNull(targets);
@@ -435,7 +443,7 @@ public class App {
             private final IndexWord word;
             private final List<TreeNode> children;
 
-            public IndexWordTreeNode(final IndexWord word) {
+            public IndexWordTreeNode(@NotNull final IndexWord word) {
                 this.word = Objects.requireNonNull(word);
                 this.children = new ArrayList<>();
 
@@ -582,7 +590,8 @@ public class App {
         }
 
         // FIXME: This seems dumb. There is not a better way to do this?
-        private static TreePath path(final TreeNode node) {
+        private static @NotNull
+        TreePath path(@NotNull final TreeNode node) {
             final TreeNode parent = node.getParent();
             if (parent == null) {
                 return new TreePath(node);
@@ -591,7 +600,7 @@ public class App {
             }
         }
 
-        private void setWordOfInterest(final String s) {
+        private void setWordOfInterest(@NotNull final String s) {
             selectedRegion = s;
             selectedWords = lookupAsList(dictionary, s);
             wordTree.setModel(makeWordTreeModel());
@@ -609,24 +618,27 @@ public class App {
             firstWord.ifPresent(treeNode -> wordTree.setSelectionPath(path(treeNode)));
         }
 
-        private static long wordCount(final String s) {
+        private static long wordCount(@NotNull final String s) {
             return Stream.of(s.split("\r?\n|\r| ")).filter(x -> x.trim().length() > 0).count();
         }
 
-        private static Set<Word> synonyms(final IndexWord w) {
+        private static @NotNull
+        Set<Word> synonyms(@NotNull final IndexWord w) {
             return w.getSenses().stream()
                     .flatMap(x -> x.getWords().stream())
                     .collect(Collectors.toSet());
         }
 
-        private static List<Word> synonymsAsList(final IndexWord w) {
+        private static @NotNull
+        List<Word> synonymsAsList(@NotNull final IndexWord w) {
             final Set<Word> words = synonyms(w);
             final List<Word> l = new ArrayList<>(words);
             l.sort(Comparator.comparing(Word::getLemma));
             return l;
         }
 
-        private static List<PointerTarget> getTargetsUnchecked(final Synset s, final PointerType t) {
+        private static @NotNull
+        List<PointerTarget> getTargetsUnchecked(@NotNull final Synset s, @NotNull final PointerType t) {
             try {
                 return s.getTargets(t);
             } catch (final JWNLException e) {
@@ -634,7 +646,8 @@ public class App {
             }
         }
 
-        private static List<Word> targetsAsList(final IndexWord m, final PointerType type) {
+        private static @NotNull
+        List<Word> targetsAsList(@NotNull final IndexWord m, @NotNull final PointerType type) {
             return m.getSenses().stream()
                     .flatMap(x -> getTargetsUnchecked(x, type).stream())
                     .map(PointerTarget::getSynset)
@@ -644,11 +657,11 @@ public class App {
                     .collect(Collectors.toList());
         }
 
-        private static String rootWords(final Collection<IndexWord> m) {
+        private static @NotNull String rootWords(@NotNull final Collection<IndexWord> m) {
             return String.join(", ", m.stream().map(IndexWord::getLemma).collect(Collectors.toSet()));
         }
 
-        private static List<TreeNode> getNodes(final TreeNode node) {
+        private static @NotNull List<TreeNode> getNodes(@NotNull final TreeNode node) {
             final List<TreeNode> l = new ArrayList<>();
             l.add(node);
             for (final TreeNode child : Collections.list(node.children())) {
@@ -910,7 +923,7 @@ public class App {
 
             infoTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
 
-                private boolean isDanger(final Object value) {
+                private boolean isDanger(@NotNull final Object value) {
                     if (value instanceof String s) {
                         return isNumeric(s) && s.startsWith("-");
                     }
@@ -1006,7 +1019,7 @@ public class App {
             }
         }
 
-        private static String hash(final String s) {
+        private static @NotNull String hash(@NotNull final String s) {
             try {
                 final MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
                 messageDigest.update(s.getBytes());
@@ -1016,7 +1029,7 @@ public class App {
             }
         }
 
-        private void loadFile(final File file) throws IOException {
+        private void loadFile(@NotNull final File file) throws IOException {
             final String content = Files.readString(file.toPath());
             this.file = file;
             savedHash = hash(content);
@@ -1027,7 +1040,7 @@ public class App {
 
     }
 
-    private static int getTwitterCharacters(final String s) {
+    private static int getTwitterCharacters(@NotNull final String s) {
         // See https://developer.twitter.com/en/docs/counting-characters
         // FIXME: Need to handle counts for Unicode characters correctly?
 
@@ -1045,7 +1058,7 @@ public class App {
         return total;
     }
 
-    private static String getWordAtCaret(final JTextComponent tc, final int caretPosition) {
+    private static @NotNull String getWordAtCaret(@NotNull final JTextComponent tc, final int caretPosition) {
         try {
             final int start = Utilities.getWordStart(tc, caretPosition);
             final int end = Utilities.getWordEnd(tc, caretPosition);
@@ -1055,11 +1068,11 @@ public class App {
         }
     }
 
-    private static String getRegion(final JTextComponent tc, final RuleMatch m) {
+    private static @NotNull String getRegion(@NotNull final JTextComponent tc, @NotNull final RuleMatch m) {
         return getText(tc).substring(m.getFromPos(), m.getToPos());
     }
 
-    private DocumentFrame createNewDocumentFrame() {
+    private @NotNull DocumentFrame createNewDocumentFrame() {
         final DocumentFrame mainFrame = new DocumentFrame();
         mainFrame.setSize(1200, 1000);
         mainFrame.setVisible(true);
@@ -1075,7 +1088,7 @@ public class App {
 
         private final Function<T, String> transformer;
 
-        public TransformingListCellRenderer(final Function<T, String> transformer) {
+        public TransformingListCellRenderer(@NotNull final Function<T, String> transformer) {
             this.transformer = transformer;
         }
 
@@ -1092,7 +1105,7 @@ public class App {
 
         private final List<T> list;
 
-        public ListListModel(final List<T> list) {
+        public ListListModel(@NotNull final List<T> list) {
             this.list = list;
         }
 
@@ -1110,12 +1123,12 @@ public class App {
 
     private final Pattern pattern = Pattern.compile("-?\\d+(\\.\\d+)?");
 
-    public boolean isNumeric(final String strNum) {
+    public boolean isNumeric(@NotNull final String strNum) {
         Objects.requireNonNull(strNum);
         return pattern.matcher(strNum).matches();
     }
 
-    public static List<IndexWord> lookupAsList(final Dictionary dictionary, final String s) {
+    public static List<IndexWord> lookupAsList(@NotNull final Dictionary dictionary, @NotNull final String s) {
         final Map<POS, IndexWord> m = lookup(dictionary, s);
         final Set<IndexWord> wordsAsSet = new HashSet<>(m.values());
         final List<IndexWord> wordsAsList = new ArrayList<>(wordsAsSet);
@@ -1123,7 +1136,7 @@ public class App {
         return wordsAsList;
     }
 
-    public static Map<POS, IndexWord> lookup(final Dictionary dictionary, final String s) {
+    public static @NotNull Map<POS, IndexWord> lookup(@NotNull final Dictionary dictionary, @NotNull final String s) {
         final ImmutableMap.Builder<POS, IndexWord> m = new ImmutableMap.Builder<>();
         POS.getAllPOS().forEach(p -> {
             try {
@@ -1139,7 +1152,7 @@ public class App {
         return m.build();
     }
 
-    public static void main(final String[] args) {
+    public static void main(@NotNull final String[] args) {
         System.out.println("starting WordWhittler v" + version);
         SwingUtilities.invokeLater(() -> new App().createNewDocumentFrame());
     }

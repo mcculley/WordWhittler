@@ -20,8 +20,8 @@ public class AppTest {
     @Test
     public void testWordySynonyms() throws JWNLException {
         final Dictionary dictionary = Dictionary.getDefaultResourceInstance();
-        final Map<String, Synset> phraseToWord = WordNetUtilities.phrasesToWords(dictionary);
-        System.out.println("phraseToWord=" + phraseToWord);
+//        final Map<String, Synset> phraseToWord = WordNetUtilities.phrasesToWords(dictionary);
+//        System.out.println("phraseToWord=" + phraseToWord);
     }
 
     //@Test
