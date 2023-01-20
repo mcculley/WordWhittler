@@ -14,6 +14,7 @@ import net.sf.extjwnl.data.Synset;
 import net.sf.extjwnl.data.Word;
 import net.sf.extjwnl.dictionary.Dictionary;
 import org.enki.swing.ListListModel;
+import org.enki.swing.TransformingListCellRenderer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.languagetool.JLanguageTool;
@@ -1088,23 +1089,6 @@ public class App {
         });
 
         return mainFrame;
-    }
-
-    private static class TransformingListCellRenderer<T> extends DefaultListCellRenderer {
-
-        private final Function<T, String> transformer;
-
-        public TransformingListCellRenderer(@NotNull final Function<T, String> transformer) {
-            this.transformer = transformer;
-        }
-
-        @Override
-        public Component getListCellRendererComponent(final JList<?> list, final Object value, final int index,
-                                                      final boolean isSelected, final boolean cellHasFocus) {
-            return super.getListCellRendererComponent(list, transformer.apply((T) value), index, isSelected,
-                    cellHasFocus);
-        }
-
     }
 
     private final Pattern pattern = Pattern.compile("-?\\d+(\\.\\d+)?");
