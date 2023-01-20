@@ -657,11 +657,13 @@ public class App {
                     .collect(Collectors.toList());
         }
 
-        private static @NotNull String rootWords(@NotNull final Collection<IndexWord> m) {
+        private static @NotNull
+        String rootWords(@NotNull final Collection<IndexWord> m) {
             return String.join(", ", m.stream().map(IndexWord::getLemma).collect(Collectors.toSet()));
         }
 
-        private static @NotNull List<TreeNode> getNodes(@NotNull final TreeNode node) {
+        private static @NotNull
+        List<TreeNode> getNodes(@NotNull final TreeNode node) {
             final List<TreeNode> l = new ArrayList<>();
             l.add(node);
             for (final TreeNode child : Collections.list(node.children())) {
@@ -1019,7 +1021,8 @@ public class App {
             }
         }
 
-        private static @NotNull String hash(@NotNull final String s) {
+        private static @NotNull
+        String hash(@NotNull final String s) {
             try {
                 final MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
                 messageDigest.update(s.getBytes());
@@ -1058,7 +1061,8 @@ public class App {
         return total;
     }
 
-    private static @NotNull String getWordAtCaret(@NotNull final JTextComponent tc, final int caretPosition) {
+    private static @NotNull
+    String getWordAtCaret(@NotNull final JTextComponent tc, final int caretPosition) {
         try {
             final int start = Utilities.getWordStart(tc, caretPosition);
             final int end = Utilities.getWordEnd(tc, caretPosition);
@@ -1072,7 +1076,8 @@ public class App {
         return getText(tc).substring(m.getFromPos(), m.getToPos());
     }
 
-    private @NotNull DocumentFrame createNewDocumentFrame() {
+    private @NotNull
+    DocumentFrame createNewDocumentFrame() {
         final DocumentFrame mainFrame = new DocumentFrame();
         mainFrame.setSize(1200, 1000);
         mainFrame.setVisible(true);
@@ -1136,7 +1141,8 @@ public class App {
         return wordsAsList;
     }
 
-    public static @NotNull Map<POS, IndexWord> lookup(@NotNull final Dictionary dictionary, @NotNull final String s) {
+    public static @NotNull
+    Map<POS, IndexWord> lookup(@NotNull final Dictionary dictionary, @NotNull final String s) {
         final ImmutableMap.Builder<POS, IndexWord> m = new ImmutableMap.Builder<>();
         POS.getAllPOS().forEach(p -> {
             try {
