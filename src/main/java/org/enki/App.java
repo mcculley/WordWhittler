@@ -13,6 +13,7 @@ import net.sf.extjwnl.data.PointerType;
 import net.sf.extjwnl.data.Synset;
 import net.sf.extjwnl.data.Word;
 import net.sf.extjwnl.dictionary.Dictionary;
+import org.enki.swing.ListListModel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.languagetool.JLanguageTool;
@@ -1102,26 +1103,6 @@ public class App {
                                                       final boolean isSelected, final boolean cellHasFocus) {
             return super.getListCellRendererComponent(list, transformer.apply((T) value), index, isSelected,
                     cellHasFocus);
-        }
-
-    }
-
-    private static class ListListModel<T> extends AbstractListModel<T> {
-
-        private final List<T> list;
-
-        public ListListModel(@NotNull final List<T> list) {
-            this.list = list;
-        }
-
-        @Override
-        public int getSize() {
-            return list.size();
-        }
-
-        @Override
-        public T getElementAt(int i) {
-            return list.get(i);
         }
 
     }
